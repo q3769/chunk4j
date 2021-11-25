@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,7 +59,7 @@ public class DefaultBytesStitcher implements BytesStitcher {
                 .sum();
     }
 
-    private final Cache<String, List<Chunk>> chunkGroups;
+    private final Cache<UUID, List<Chunk>> chunkGroups;
 
     private DefaultBytesStitcher(Builder builder) {
         final long maxStitchTimeMillis = builder.maxStitchTimeMillis == null ? DEFAULT_MAX_STITCH_TIME_MILLIS
@@ -73,20 +74,20 @@ public class DefaultBytesStitcher implements BytesStitcher {
 
     @Override
     public Optional<byte[]> stitch(Chunk chunk) {
-        final String groupName = chunk.getGroupName();
-        List<Chunk> chunks = chunkGroups.getIfPresent(groupName);
+        final UUID groupId = chunk.getGroupId();
+        List<Chunk> chunks = chunkGroups.getIfPresent(groupId);
         if (chunks == null) {
             chunks = new ArrayList<>(List.of(chunk));
-            chunkGroups.put(groupName, chunks);
+            chunkGroups.put(groupId, chunks);
         } else {
             chunks.add(chunk);
         }
         if (chunks.size() != chunk.getGroupSize()) {
             return Optional.empty();
         }
-        chunkGroups.invalidate(groupName);
+        chunkGroups.invalidate(groupId);
         Collections.sort(chunks, (c1, c2) -> {
-            return c1.getGroupIndex() - c2.getGroupIndex();
+            return c1.getChunkPosition() - c2.getChunkPosition();
         });
         return Optional.of(stitchAll(chunks));
     }
@@ -112,7 +113,7 @@ public class DefaultBytesStitcher implements BytesStitcher {
 
     }
 
-    private static class LoggingListener implements RemovalListener<String, List<Chunk>> {
+    private static class LoggingListener implements RemovalListener<UUID, List<Chunk>> {
 
         private final long maxStitchTimeMillis;
 
@@ -121,7 +122,7 @@ public class DefaultBytesStitcher implements BytesStitcher {
         }
 
         @Override
-        public void onRemoval(String groupName, List<Chunk> chunks, RemovalCause cause) {
+        public void onRemoval(UUID groupName, List<Chunk> chunks, RemovalCause cause) {
             if (cause == RemovalCause.EXPIRED) {
                 LOG.log(Level.SEVERE,
                         "Chunk group {0} took too long to stitch and expired after {1} milliseconds, expected {2} chunks but only {3} received when expired",

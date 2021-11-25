@@ -24,15 +24,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @author QingtianWang
+ * @author Qingtian Wang
  */
-public class ByteChunksIT {
+public class ByteChunksTest {
 
     private static final String DATA_TEXT1 =
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
@@ -40,37 +38,26 @@ public class ByteChunksIT {
 
     @Test
     public void testByteChunks() {
-        final int chunkByteCapacity = 2;
-        final String chunkGroup1 = "data1";
-        final String chunkGroup2 = "data2";
-        final DefaultBytesChopper chopper1 = DefaultBytesChopper.builder()
-                .chunkByteCapacity(chunkByteCapacity)
-                .chunkGroupName(chunkGroup1)
-                .build();
-        final DefaultBytesChopper chopper2 = DefaultBytesChopper.builder()
-                .chunkByteCapacity(chunkByteCapacity)
-                .chunkGroupName(chunkGroup2)
-                .build();
+        final int chunkByteCapacity = 4;
+        final DefaultBytesChopper chopper = DefaultBytesChopper.ofChunkByteCapacity(chunkByteCapacity);
         final DefaultBytesStitcher stitcher = new DefaultBytesStitcher.Builder().build();
 
-        List<Chunk> chopped1 = chopper1.chop(DATA_TEXT1.getBytes());
-        List<Chunk> chopped2 = chopper2.chop(DATA_TEXT2.getBytes());
-        final List<Chunk> combinedAndShuffled = Stream.of(chopped1, chopped2)
-                .flatMap(x -> x.stream())
-                .collect(Collectors.toList());
-        Collections.shuffle(combinedAndShuffled);
-        List<byte[]> stitched = new ArrayList<>();
-        for (Chunk chunk : combinedAndShuffled) {
+        final List<Chunk> choppedAndShuffled = new ArrayList<>();
+        choppedAndShuffled.addAll(chopper.chop(DATA_TEXT1.getBytes()));
+        choppedAndShuffled.addAll(chopper.chop(DATA_TEXT2.getBytes()));
+        Collections.shuffle(choppedAndShuffled);
+        final List<byte[]> stitched = new ArrayList<>();
+        for (Chunk chunk : choppedAndShuffled) {
             final Optional<byte[]> stitchBytes = stitcher.stitch(chunk);
             if (stitchBytes.isEmpty())
                 continue;
             stitched.add(stitchBytes.get());
         }
 
-        assertEquals(2, stitched.size());
-        String dataStitched1 = new String(stitched.get(0));
-        String dataStitched2 = new String(stitched.get(1));
-        assertFalse(dataStitched1.equals(dataStitched2));
+        final int originalDataCount = 2;
+        assertEquals(originalDataCount, stitched.size());
+        final String dataStitched1 = new String(stitched.get(0));
+        final String dataStitched2 = new String(stitched.get(1));
         if (!DATA_TEXT1.equals(dataStitched1))
             assertEquals(DATA_TEXT2, dataStitched1);
         else

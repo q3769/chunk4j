@@ -29,8 +29,8 @@ public interface BytesStitcher {
 
     /**
      * @param chunk
-     * @return The original data blob restored by stitching if the input chunk is the last missing piece of the entire
-     *         group; empty otherwise.
+     * @return Optional of the original data blob restored by stitching. Contains the restored bytes if the input chunk
+     *         is the last missing piece of the entire group of chunks; empty otherwise.
      */
     Optional<byte[]> stitch(Chunk chunk);
 }

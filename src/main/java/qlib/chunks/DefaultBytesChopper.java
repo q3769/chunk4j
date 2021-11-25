@@ -23,47 +23,42 @@ package qlib.chunks;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import lombok.Builder;
+import java.util.UUID;
 
 /**
  * @author Qingtian Wang
  */
-@Builder
 public class DefaultBytesChopper implements BytesChopper {
 
+    public static DefaultBytesChopper ofChunkByteCapacity(int chunkByteCapacity) {
+        return new DefaultBytesChopper(chunkByteCapacity);
+    }
+
     private final int chunkByteCapacity;
-    private final String chunkGroupName;
+
+    private DefaultBytesChopper(int chunkByteCapacity) {
+        this.chunkByteCapacity = chunkByteCapacity;
+    }
 
     @Override
     public List<Chunk> chop(byte[] bytes) {
-        final int chunkCount = getChunkCount(bytes);
-        List<Chunk> chunks = new ArrayList<>(chunkCount);
+        final int groupSize = getChunkCount(bytes);
+        final UUID groupName = UUID.randomUUID();
+        List<Chunk> chunks = new ArrayList<>(groupSize);
         int start = 0;
-        int groupIndex = 0;
+        int chunkPosition = 0;
         while (start < bytes.length) {
             int end = Math.min(bytes.length, start + chunkByteCapacity);
             chunks.add(new Chunk.ChunkBuilder().byteCapacity(chunkByteCapacity)
-                    .groupName(chunkGroupName)
-                    .groupSize(chunkCount)
-                    .groupIndex(groupIndex++)
+                    .groupId(groupName)
+                    .groupSize(groupSize)
+                    .chunkPosition(chunkPosition++)
                     .bytes(Arrays.copyOfRange(bytes, start, end))
                     .build());
             start += chunkByteCapacity;
         }
-        assert chunkCount == chunks.size();
+        assert groupSize == chunks.size();
         return chunks;
-        // public static List<byte[]> divideArray(byte[] source, int chunksize) {
-        //
-        // List<byte[]> result = new ArrayList<byte[]>();
-        // int start = 0;
-        // while (start < source.length) {
-        // int end = Math.min(source.length, start + chunksize);
-        // result.add(Arrays.copyOfRange(source, start, end));
-        // start += chunksize;
-        // }
-        //
-        // return result;
-        // }
     }
 
     private int getChunkCount(byte[] bytes) {
