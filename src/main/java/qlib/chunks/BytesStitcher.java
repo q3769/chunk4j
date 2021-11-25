@@ -23,9 +23,14 @@ package qlib.chunks;
 import java.util.Optional;
 
 /**
- * @author qingt
+ * @author Qingtian Wang
  */
 public interface BytesStitcher {
 
+    /**
+     * @param chunk
+     * @return The original data blob restored by stitching if the input chunk is the last missing piece of the entire
+     *         group; empty otherwise.
+     */
     Optional<byte[]> stitch(Chunk chunk);
 }

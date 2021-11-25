@@ -23,7 +23,7 @@ package qlib.chunks;
 import java.util.List;
 
 /**
- * @author qingt
+ * @author Qingtian Wang
  */
 public interface BytesChopper {
 

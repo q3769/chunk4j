@@ -25,24 +25,37 @@ import lombok.Builder;
 import lombok.Value;
 
 /**
- * @author qingt
+ * A larger blob of data can be chopped up into smaller "chunks" that form a "group". The group of
+ * chunks can then be collectively stitched back together to restore the original data.
+ * 
+ * @author Qingtian Wang
  */
 @Value
 @Builder
 public class Chunk implements Serializable {
 
+    /**
+     * Maximum data byte size the chunk and hold.
+     */
     private final int byteCapacity;
+    /**
+     * Effectively the name of the original data.
+     */
     private final String groupName;
+    /**
+     * Total number of chunks the original data blob is chopped into.
+     */
     private final int groupSize;
-    private final int groupIndex;
-    private final byte[] bytes;
 
-    private Chunk(int byteCapacity, String groupName, int groupSize, int groupIndex, byte[] bytes) {
-        this.byteCapacity = byteCapacity;
-        this.groupName = groupName;
-        this.groupSize = groupSize;
-        this.groupIndex = groupIndex;
-        this.bytes = bytes;
-    }
+    /**
+     * Ordered index this chuck is positioned in the group.
+     */
+    private final int groupIndex;
+
+    /**
+     * Data bytes chopped to this chunk. Every chunk in the group should hold bytes to its full capacity in size except
+     * maybe the last one in the group.
+     */
+    private final byte[] bytes;
 
 }

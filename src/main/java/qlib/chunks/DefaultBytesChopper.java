@@ -25,10 +25,13 @@ import java.util.Arrays;
 import java.util.List;
 import lombok.Builder;
 
+/**
+ * @author Qingtian Wang
+ */
 @Builder
 public class DefaultBytesChopper implements BytesChopper {
 
-    private final int chunkCapacity;
+    private final int chunkByteCapacity;
     private final String chunkGroupName;
 
     @Override
@@ -38,14 +41,14 @@ public class DefaultBytesChopper implements BytesChopper {
         int start = 0;
         int groupIndex = 0;
         while (start < bytes.length) {
-            int end = Math.min(bytes.length, start + chunkCapacity);
-            chunks.add(new Chunk.ChunkBuilder().byteCapacity(chunkCapacity)
+            int end = Math.min(bytes.length, start + chunkByteCapacity);
+            chunks.add(new Chunk.ChunkBuilder().byteCapacity(chunkByteCapacity)
                     .groupName(chunkGroupName)
                     .groupSize(chunkCount)
                     .groupIndex(groupIndex++)
                     .bytes(Arrays.copyOfRange(bytes, start, end))
                     .build());
-            start += chunkCapacity;
+            start += chunkByteCapacity;
         }
         assert chunkCount == chunks.size();
         return chunks;
@@ -64,8 +67,8 @@ public class DefaultBytesChopper implements BytesChopper {
     }
 
     private int getChunkCount(byte[] bytes) {
-        int chunkCount = bytes.length / chunkCapacity;
-        return bytes.length % chunkCapacity == 0 ? chunkCount : chunkCount + 1;
+        int chunkCount = bytes.length / chunkByteCapacity;
+        return bytes.length % chunkByteCapacity == 0 ? chunkCount : chunkCount + 1;
     }
 
 }
