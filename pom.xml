@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.q3769.qlib</groupId>
     <artifactId>chunks</artifactId>
-    <version>20211125.0.1</version>
+    <version>20211125.1.0</version>
     <packaging>jar</packaging>
-    <name>chunks</name>
+    <name>Chunks</name>
     <description>A Java API to chop up larger data blobs into smaller "chunks" with pre-defined size, and stitch the chunks back together to restore the original data when needed.</description>
     <url>https://github.com/q3769/chunks</url>
     <licenses>

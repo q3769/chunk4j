@@ -21,6 +21,8 @@
 package qlib.chunks;
 
 import java.io.Serializable;
+import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Value;
@@ -33,7 +35,7 @@ import lombok.Value;
  * @author Qingtian Wang
  */
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class Chunk implements Serializable {
 
     /**
@@ -55,6 +57,12 @@ public class Chunk implements Serializable {
      * Ordered index at which this current chunk is positioned inside the chunk group.
      */
     private final int chunkPosition;
+
+    /**
+     * Custom properties you may care to add. If you do decide to do so, it is up to you to handle immutability,
+     * serializability and whatnot.
+     */
+    private final Map<String, String> properties;
 
     /**
      * Data bytes chopped for this current chunk to hold. Every chunk in the group should hold bytes of size equal to
