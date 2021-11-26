@@ -11,6 +11,24 @@ Note that the processes of chopping and stitching often happen on different netw
 ## Prerequisite
 Java 8 or better
 
+## Get it...
+
+In Maven
+
+```
+<dependency>
+    <groupId>io.github.q3769.qlib</groupId>
+    <artifactId>chunks</artifactId>
+    <version>20211125.0.1</version>
+</dependency>
+```
+
+In Gradle
+
+```
+implementation 'io.github.q3769.qlib:chunks:20211125.0.1'
+```
+
 ## Use it...
 
 ### The Chunk
