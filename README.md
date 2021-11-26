@@ -126,10 +126,7 @@ public class MyReceiver {
 
 	public void onReceiving(Chunk chunk) {
 		final Optional<byte[]> stitchedBytes = stitcher.stitch(chunk);
-		if (stitchedBytes.isEmpty())
-			return;
-		else 
-			processOriginalData(new String(stitchedBytes.get()));
+		stitchedBytes.ifPresent(originalDataBytes -> processOriginalData(new String(originalDataBytes));
 	}
 	
 	private void processOriginalData(String dataText) {
