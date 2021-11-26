@@ -65,12 +65,12 @@ On the chopper side, a data blob (bytes) is chopped into a group of chunks. Inte
 ```
 public class MySender {
 
-	priviate Chopper chopper = DefaultChopper.ofChunkByteCapacity(1024); // holds up to 1024 bytes
+	priviate Chopper chopper = DefaultChopper.ofChunkByteCapacity(1024); // each chopped off chunk holds up to 1024 bytes
 	
 	...
 
 	public void send(String dataText) {
-		List<Chunk> chunks = chopper.chop(aLargeDataText.getBytes());
+		List<Chunk> chunks = chopper.chop(dataText.getBytes());
 		transport.sendAll(chunks);
 	}
 
