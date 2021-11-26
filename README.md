@@ -142,22 +142,28 @@ public class MyReceiver {
 
 The stitcher caches all "pending" chunks it has received via the `stitch` method in different groups, each group representing one original data unit. When an incoming `chunk` renders its group "complete" - i.e. the group has gathered all the chunks needed to restore the whole group of chunks back to the original data unit - then such group of chunks are stitched back together for original data restoration. As soon as the original data unit is restored and returned by the `stitch` method, all chunks in the group are evicted from the cache.
 
-By default, a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded no matter how much time has passed without being able to restore the group back to the original data unit. Both aspects of the default, though, can be customized.
-
-This stitcher will discard a group of chunks if 2 seconds have passed since it was asked to stitch the first chunk of the group but hasn't received all the chunks needed to stitch the whole group of chunks back to the original data:
+By default,
 
 ```
-Stitcher stitcher = new DefaultStitcher.Builder().maxStitchTimeMillis(2000).build();
+new DefaultStitcher.Builder().build()
+```
+
+a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded no matter how much time has passed without being able to restore the group back to the original data unit. Both aspects of the default, though, can be customized.
+
+The following stitcher will discard a group of chunks if 2 seconds have passed since the stitcher was asked to stitch the very first chunk of the group but hasn't received all the chunks needed to retore the whole group of chunks back to the original data:
+
+```
+new DefaultStitcher.Builder().maxStitchTimeMillis(2000).build()
 ```
 
 This stitcher will discard some group(s) of chunks when there are more than 100 chunk groups pending restoration:
 
 ```
-Stitcher stitcher = new DefaultStitcher.Builder().maxGroups(100).build();
+new DefaultStitcher.Builder().maxGroups(100).build()
 ```
 
 This stitcher is customized by a combination of both aspects:
 
 ```
-Stitcher stitcher = new DefaultStitcher.Builder().maxStitchTimeMillis(2000).maxGroups(100).build();
+new DefaultStitcher.Builder().maxStitchTimeMillis(2000).maxGroups(100).build()
 ```
