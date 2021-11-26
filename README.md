@@ -87,7 +87,7 @@ On the chopper side, a data blob (bytes) is chopped into a group of chunks. Inte
 ```
 public class MySender {
 
-	priviate Chopper chopper = DefaultChopper.ofChunkByteCapacity(1024); // each chopped off chunk holds up to 1024 bytes
+	priviate Chopper chopper = ChunksChopper.ofChunkByteCapacity(1024); // each chopped off chunk holds up to 1024 bytes
 	
 	...
 
@@ -119,7 +119,7 @@ On the stitcher side, the `stitch` method is called repeatedly on all chunks. On
 ```
 public class MyReceiver {
 
-	private Stitcher stitcher = new DefaultStitcher.Builder().build();
+	private Stitcher stitcher = new ChunksStitcher.Builder().build();
 	
 	...
 
@@ -142,7 +142,7 @@ The stitcher caches all "pending" chunks it has received via the `stitch` method
 By default,
 
 ```
-new DefaultStitcher.Builder().build()
+new ChunksStitcher.Builder().build()
 ```
 
 a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded no matter how much time has passed without being able to restore the group back to the original data unit. Both aspects of the default, though, can be customized.
@@ -150,17 +150,17 @@ a stitcher caches unbounded groups of pending chunks, and a pending group of chu
 The following stitcher will discard a group of chunks if 2 seconds have passed since the stitcher was asked to stitch the very first chunk of the group but hasn't received all the chunks needed to retore the whole group of chunks back to the original data:
 
 ```
-new DefaultStitcher.Builder().maxStitchTimeMillis(2000).build()
+new ChunksStitcher.Builder().maxStitchTimeMillis(2000).build()
 ```
 
 This stitcher will discard some group(s) of chunks when there are more than 100 chunk groups pending restoration:
 
 ```
-new DefaultStitcher.Builder().maxGroups(100).build()
+new ChunksStitcher.Builder().maxGroups(100).build()
 ```
 
 This stitcher is customized by a combination of both aspects:
 
 ```
-new DefaultStitcher.Builder().maxStitchTimeMillis(2000).maxGroups(100).build()
+new ChunksStitcher.Builder().maxStitchTimeMillis(2000).maxGroups(100).build()
 ```

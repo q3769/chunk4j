@@ -36,9 +36,9 @@ import java.util.logging.Logger;
 /**
  * @author Qingtian Wang
  */
-public class DefaultStitcher implements Stitcher {
+public final class ChunksStitcher implements Stitcher {
 
-    private static final Logger LOG = Logger.getLogger(DefaultStitcher.class.getName());
+    private static final Logger LOG = Logger.getLogger(ChunksStitcher.class.getName());
     private static final long DEFAULT_MAX_CHUNKS_GROUP_COUNT = Long.MAX_VALUE;
     private static final long DEFAULT_MAX_STITCH_TIME_MILLIS = Long.MAX_VALUE;
 
@@ -61,7 +61,7 @@ public class DefaultStitcher implements Stitcher {
 
     private final Cache<UUID, List<Chunk>> chunkGroups;
 
-    private DefaultStitcher(Builder builder) {
+    private ChunksStitcher(Builder builder) {
         final long maxStitchTimeMillis = builder.maxStitchTimeMillis == null ? DEFAULT_MAX_STITCH_TIME_MILLIS
                 : builder.maxStitchTimeMillis;
         final long maxGroups = builder.maxGroups == null ? DEFAULT_MAX_CHUNKS_GROUP_COUNT : builder.maxGroups;
@@ -107,8 +107,8 @@ public class DefaultStitcher implements Stitcher {
             return this;
         }
 
-        public DefaultStitcher build() {
-            return new DefaultStitcher(this);
+        public ChunksStitcher build() {
+            return new ChunksStitcher(this);
         }
 
     }

@@ -28,15 +28,15 @@ import java.util.UUID;
 /**
  * @author Qingtian Wang
  */
-public class DefaultChopper implements Chopper {
+public final class ChunksChopper implements Chopper {
 
-    public static DefaultChopper ofChunkByteCapacity(int chunkByteCapacity) {
-        return new DefaultChopper(chunkByteCapacity);
+    public static ChunksChopper ofChunkByteCapacity(int chunkByteCapacity) {
+        return new ChunksChopper(chunkByteCapacity);
     }
 
     private final int chunkByteCapacity;
 
-    private DefaultChopper(int chunkByteCapacity) {
+    private ChunksChopper(int chunkByteCapacity) {
         this.chunkByteCapacity = chunkByteCapacity;
     }
 
