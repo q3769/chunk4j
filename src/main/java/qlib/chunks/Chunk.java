@@ -37,28 +37,28 @@ import lombok.Value;
 public class Chunk implements Serializable {
 
     /**
-     * Maximum data byte size the chunk can hold.
+     * Maximum data byte size a chunk can hold.
      */
     private final int byteCapacity;
 
     /**
-     * The ID of the original data blob.
+     * The group ID of the original data blob. All chunks in the same group share the same group ID.
      */
     private final UUID groupId;
 
     /**
-     * Total number of chunks the original data blob is chopped into.
+     * Total number of chunks the original data blob is chopped to form the group.
      */
     private final int groupSize;
 
     /**
-     * Ordered index at which this chunk is positioned inside the chunk group.
+     * Ordered index at which this current chunk is positioned inside the chunk group.
      */
     private final int chunkPosition;
 
     /**
-     * Data bytes chopped into this chunk. Every chunk in the group should hold bytes to its full capacity in size
-     * except maybe the last one in the group.
+     * Data bytes chopped for this current chunk to hold. Every chunk in the group should hold bytes of size equal to
+     * the chunk's full capacity except maybe the last one in the group.
      */
     private final byte[] bytes;
 

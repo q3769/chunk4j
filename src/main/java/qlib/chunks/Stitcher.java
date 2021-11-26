@@ -30,7 +30,7 @@ public interface Stitcher {
     /**
      * @param chunk
      * @return Optional of the original data blob restored by stitching. Contains the restored bytes if the input chunk
-     *         is the last missing piece of the entire group of chunks; empty otherwise.
+     *         is the last missing piece of the entire group of chunks representing the original data; empty otherwise.
      */
     Optional<byte[]> stitch(Chunk chunk);
 }
