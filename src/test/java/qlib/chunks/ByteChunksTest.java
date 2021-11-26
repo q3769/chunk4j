@@ -39,8 +39,8 @@ public class ByteChunksTest {
     @Test
     public void testByteChunks() {
         final int chunkByteCapacity = 4;
-        final DefaultBytesChopper chopper = DefaultBytesChopper.ofChunkByteCapacity(chunkByteCapacity);
-        final DefaultBytesStitcher stitcher = new DefaultBytesStitcher.Builder().build();
+        final DefaultChopper chopper = DefaultChopper.ofChunkByteCapacity(chunkByteCapacity);
+        final DefaultStitcher stitcher = new DefaultStitcher.Builder().build();
 
         final List<Chunk> choppedAndShuffled = new ArrayList<>();
         choppedAndShuffled.addAll(chopper.chop(DATA_TEXT1.getBytes()));

@@ -25,7 +25,7 @@ import java.util.Optional;
 /**
  * @author Qingtian Wang
  */
-public interface BytesStitcher {
+public interface Stitcher {
 
     /**
      * @param chunk

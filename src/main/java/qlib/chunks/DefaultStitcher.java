@@ -36,9 +36,9 @@ import java.util.logging.Logger;
 /**
  * @author Qingtian Wang
  */
-public class DefaultBytesStitcher implements BytesStitcher {
+public class DefaultStitcher implements Stitcher {
 
-    private static final Logger LOG = Logger.getLogger(DefaultBytesStitcher.class.getName());
+    private static final Logger LOG = Logger.getLogger(DefaultStitcher.class.getName());
     private static final long DEFAULT_MAX_CHUNKS_GROUP_COUNT = Long.MAX_VALUE;
     private static final long DEFAULT_MAX_STITCH_TIME_MILLIS = Long.MAX_VALUE;
 
@@ -61,12 +61,12 @@ public class DefaultBytesStitcher implements BytesStitcher {
 
     private final Cache<UUID, List<Chunk>> chunkGroups;
 
-    private DefaultBytesStitcher(Builder builder) {
+    private DefaultStitcher(Builder builder) {
         final long maxStitchTimeMillis = builder.maxStitchTimeMillis == null ? DEFAULT_MAX_STITCH_TIME_MILLIS
                 : builder.maxStitchTimeMillis;
         final long maxGroups = builder.maxGroups == null ? DEFAULT_MAX_CHUNKS_GROUP_COUNT : builder.maxGroups;
         this.chunkGroups = Caffeine.newBuilder()
-                .evictionListener(new LoggingListener(maxStitchTimeMillis))
+                .evictionListener(new LoggingListener(maxStitchTimeMillis, maxGroups))
                 .expireAfterWrite(maxStitchTimeMillis, TimeUnit.MILLISECONDS)
                 .maximumSize(maxGroups)
                 .build();
@@ -107,8 +107,8 @@ public class DefaultBytesStitcher implements BytesStitcher {
             return this;
         }
 
-        public DefaultBytesStitcher build() {
-            return new DefaultBytesStitcher(this);
+        public DefaultStitcher build() {
+            return new DefaultStitcher(this);
         }
 
     }
@@ -116,18 +116,26 @@ public class DefaultBytesStitcher implements BytesStitcher {
     private static class LoggingListener implements RemovalListener<UUID, List<Chunk>> {
 
         private final long maxStitchTimeMillis;
+        private final long maxGroups;
 
-        public LoggingListener(long maxStitchTimeMillis) {
+        public LoggingListener(long maxStitchTimeMillis, long maxGroups) {
             this.maxStitchTimeMillis = maxStitchTimeMillis;
+            this.maxGroups = maxGroups;
         }
 
         @Override
-        public void onRemoval(UUID groupName, List<Chunk> chunks, RemovalCause cause) {
-            if (cause == RemovalCause.EXPIRED) {
-                LOG.log(Level.SEVERE,
-                        "Chunk group {0} took too long to stitch and expired after {1} milliseconds, expected {2} chunks but only {3} received when expired",
-                        new Object[] { groupName, maxStitchTimeMillis, chunks.get(0)
-                                .getGroupSize(), chunks.size() });
+        public void onRemoval(UUID groupId, List<Chunk> chunks, RemovalCause cause) {
+            switch (cause) {
+                case EXPIRED:
+                    LOG.log(Level.SEVERE,
+                            "Chunk group {0} took too long to stitch and expired after {1} milliseconds, expected {2} chunks but only {3} received when expired",
+                            new Object[] { groupId, maxStitchTimeMillis, chunks.get(0)
+                                    .getGroupSize(), chunks.size() });
+                case SIZE:
+                    LOG.log(Level.SEVERE,
+                            "Chunk group {0} was removed due to exceeding max group count {1}, expected {2} chunks in the group but only got {3} when removed",
+                            new Object[] { groupId, maxGroups, chunks.get(0)
+                                    .getGroupSize(), chunks.size() });
             }
         }
     }

@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * @author Qingtian Wang
  */
-public interface BytesChopper {
+public interface Chopper {
 
     List<Chunk> chop(byte[] bytes);
 }
