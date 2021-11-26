@@ -22,7 +22,6 @@ package qlib.chunks;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.Properties;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Value;
@@ -35,39 +34,33 @@ import lombok.Value;
  * @author Qingtian Wang
  */
 @Value
-@Builder(toBuilder = true)
+@Builder
 public class Chunk implements Serializable {
 
     /**
      * Maximum data byte size a chunk can hold.
      */
-    private final int byteCapacity;
+    int byteCapacity;
 
     /**
      * The group ID of the original data blob. All chunks in the same group share the same group ID.
      */
-    private final UUID groupId;
+    UUID groupId;
 
     /**
      * Total number of chunks the original data blob is chopped to form the group.
      */
-    private final int groupSize;
+    int groupSize;
 
     /**
      * Ordered index at which this current chunk is positioned inside the chunk group.
      */
-    private final int chunkPosition;
-
-    /**
-     * Custom properties you may care to add. If you do decide to do so, it is up to you to handle immutability,
-     * serializability and whatnot.
-     */
-    private final Map<String, String> properties;
+    int chunkPosition;
 
     /**
      * Data bytes chopped for this current chunk to hold. Every chunk in the group should hold bytes of size equal to
      * the chunk's full capacity except maybe the last one in the group.
      */
-    private final byte[] bytes;
+    byte[] bytes;
 
 }

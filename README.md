@@ -35,7 +35,9 @@ implementation 'io.github.q3769.qlib:chunks:20211125.0.1'
 
 ### The Chunk
 
-A larger blob of data can be chopped up into smaller "chunks" to form a "group". When needed, often on a different network node, the group of chunks can be collectively stitched back together to restore the original data. A group has to gather all the originally chopped chunks in order to be stitched and restored back to the original data blob.   
+A larger blob of data can be chopped up into smaller "chunks" to form a "group". When needed, often on a different network node, the group of chunks can be collectively stitched back together to restore the original data. A group has to gather all the originally chopped chunks in order to be stitched and restored back to the original data blob.
+
+As the API user, though, you don't need to be concerned with the intricacies of the `Chunk`. Instead, you can directly work with `Chopper` and `Stitcher`, and be concerned only about your own data bytes.   
 
 ```
 @Value
@@ -45,28 +47,28 @@ public class Chunk implements Serializable {
     /**
      * Maximum data byte size a chunk can hold.
      */
-    private final int byteCapacity;
+    int byteCapacity;
 
     /**
      * The group ID of the original data blob. All chunks in the same group share the same group ID.
      */
-    private final UUID groupId;
+    UUID groupId;
 
     /**
      * Total number of chunks the original data blob is chopped to form the group.
      */
-    private final int groupSize;
+    int groupSize;
 
     /**
      * Ordered index at which this current chunk is positioned inside the chunk group.
      */
-    private final int chunkPosition;
+    int chunkPosition;
 
     /**
      * Data bytes chopped for this current chunk to hold. Every chunk in the group should hold bytes of size equal to
      * the chunk's full capacity except maybe the last one in the group.
      */
-    private final byte[] bytes;
+    byte[] bytes;
 
 }
 ```
@@ -112,7 +114,7 @@ public interface Stitcher {
 
 ```
 
-On the stitcher side, the `stitch` method is called repeatedly on all chunks. Whenever a meaningful group of chunks can form to restore a complete original data blob (bytes), such bytes are returned. 
+On the stitcher side, the `stitch` method is called repeatedly on all chunks. On each call, if a meaningful group of chunks can form to restore a complete original data blob (bytes), such bytes are returned inside an `Optional`; otherwise, the `stitch` method caches the `chunk` and returns an empty `Optional`.
 
 ```
 public class MyReceiver {
@@ -138,17 +140,17 @@ public class MyReceiver {
 
 ```
 
-The stitcher caches pending chunks in different groups until a full meaningful group is formed to stitch and restore the original data blob. As soon as the original data blob is restored from a group and returned by the `stitch` method, all chunks in that particular group is cleared and evicted from cache.
+The stitcher caches all "pending" chunks it has received via the `stitch` method in different groups, each group representing one original data unit. When an incoming `chunk` renders its group "complete" - i.e. the group has gathered all the chunks needed to restore the whole group of chunks back to the original data unit - then such group of chunks are stitched back together for original data restoration. As soon as the original data unit is restored and returned by the `stitch` method, all chunks in the group are evicted from the cache.
 
-By default, a stitcher keep unbounded groups of pending chunks, and a pending group of chunks will never be discarded no matter how much time has passed without being able to form a restorable group of chunks. Both aspects of the default, though, can be customized.
+By default, a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded no matter how much time has passed without being able to restore the group back to the original data unit. Both aspects of the default, though, can be customized.
 
-This stitcher will discard a group of chunks if 2 seconds has passed since it received the first chunk of the group but hasn't received all the chunks needed to stitch the whole group of chunks back to the original data:
+This stitcher will discard a group of chunks if 2 seconds have passed since it was asked to stitch the first chunk of the group but hasn't received all the chunks needed to stitch the whole group of chunks back to the original data:
 
 ```
 Stitcher stitcher = new DefaultStitcher.Builder().maxStitchTimeMillis(2000).build();
 ```
 
-This stitcher will discard some group(s) of chunks when there are more than 100 chunk groups pending to restore back to original data:
+This stitcher will discard some group(s) of chunks when there are more than 100 chunk groups pending restoration:
 
 ```
 Stitcher stitcher = new DefaultStitcher.Builder().maxGroups(100).build();
