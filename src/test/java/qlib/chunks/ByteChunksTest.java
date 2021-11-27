@@ -41,12 +41,12 @@ public class ByteChunksTest {
         final ChunksChopper chopper = ChunksChopper.ofChunkByteSize(chunkByteCapacity);
         final ChunksStitcher stitcher = new ChunksStitcher.Builder().build();
 
-        final List<Chunk> choppedAndShuffled = new ArrayList<>();
-        choppedAndShuffled.addAll(chopper.chop(DATA_TEXT1.getBytes()));
-        choppedAndShuffled.addAll(chopper.chop(DATA_TEXT2.getBytes()));
-        Collections.shuffle(choppedAndShuffled);
+        final List<Chunk> choppedMingledShuffled = new ArrayList<>();
+        choppedMingledShuffled.addAll(chopper.chop(DATA_TEXT1.getBytes()));
+        choppedMingledShuffled.addAll(chopper.chop(DATA_TEXT2.getBytes()));
+        Collections.shuffle(choppedMingledShuffled);
         final List<byte[]> stitched = new ArrayList<>();
-        choppedAndShuffled.forEach(chunk -> {
+        choppedMingledShuffled.forEach(chunk -> {
             stitcher.stitch(chunk)
                     .ifPresent(originalDataBytes -> stitched.add(originalDataBytes));
         });
