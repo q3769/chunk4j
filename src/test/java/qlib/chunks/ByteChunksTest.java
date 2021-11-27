@@ -23,7 +23,6 @@ package qlib.chunks;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -47,12 +46,10 @@ public class ByteChunksTest {
         choppedAndShuffled.addAll(chopper.chop(DATA_TEXT2.getBytes()));
         Collections.shuffle(choppedAndShuffled);
         final List<byte[]> stitched = new ArrayList<>();
-        for (Chunk chunk : choppedAndShuffled) {
-            final Optional<byte[]> stitchBytes = stitcher.stitch(chunk);
-            if (stitchBytes.isEmpty())
-                continue;
-            stitched.add(stitchBytes.get());
-        }
+        choppedAndShuffled.forEach(chunk -> {
+            stitcher.stitch(chunk)
+                    .ifPresent(originalDataBytes -> stitched.add(originalDataBytes));
+        });
 
         final int originalDataCount = 2;
         assertEquals(originalDataCount, stitched.size());
