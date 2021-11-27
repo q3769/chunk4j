@@ -81,7 +81,7 @@ public interface Chopper {
 }
 ```
 
-On the chopper side, a data blob (bytes) is chopped into a group of chunks. You only have to say how big a chunk can be. Internally, the chopper will divide up the original data bytes based on the chunk size you specified, and assign a unique group ID to all the chunks in the same group representing the original data unit.
+On the chopper side, a data blob (bytes) is chopped into a group of chunks. You only have to say how big you want the chunks chopped up to be. Internally, the chopper will divide up the original data bytes based on the chunk size you specified, and assign a unique group ID to all the chunks in the same group representing the original data unit.
 
 ```
 public class MySender {
