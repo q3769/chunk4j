@@ -6,7 +6,7 @@ A Java API to chop up larger data blobs into smaller "chunks" of a pre-defined s
 
 ## User story
 
-As a user of the Chunks API, I want to be able to chop data blobs (bytes) into pieces of pre-defined size and, when needed, restore the original data by stitching the pieces back together.
+As a user of the Chunks API, I want to be able to chop data blobs (bytes) into pieces of a pre-defined size and, when needed, restore the original data by stitching the pieces back together.
 
 Note that the separate processes of "chop and stitch" often happen on different network compute nodes, and the chunks are transported between the nodes in random order.
 
