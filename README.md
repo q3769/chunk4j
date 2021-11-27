@@ -37,7 +37,7 @@ implementation 'io.github.q3769.qlib:chunks:20211127.0.0'
 
 A larger blob of data can be chopped up into smaller "chunks" to form a "group". When needed, often on a different network node, the group of chunks can be collectively stitched back together to restore the original data. A group has to gather all the originally chopped chunks in order to be stitched and restored back to the original data blob.
 
-As the API user, though, you don't need to be concerned about the intricacies of the `Chunk`. Instead, you can directly work with `Chopper` and `Stitcher`, and only be concerned with your own data bytes.   
+As the API user, though, you don't need to be concerned about the intricacies of the `Chunk`: it suffices to know `Chunk` is `Serializable` POJO with a upper byte size capacity. Instead, you can directly work with `Chopper` and `Stitcher`, and only be concerned with your own data bytes.
 
 ```
 @Value
@@ -81,7 +81,7 @@ public interface Chopper {
 }
 ```
 
-On the chopper side, a data blob (bytes) is chopped into a group of chunks. Internally, the chopper assigns the same group ID to all the chunks of the same group representing the original data bytes.
+On the chopper side, a data blob (bytes) is chopped into a group of chunks. You only have to say how big each chunk can be. Internally, the chopper will divide up the original data bytes based on the chunk size you specified, and assigns a unique group ID to all the chunks in the same group representing the original data unit.
 
 ```
 public class MySender {
@@ -144,7 +144,7 @@ By default, a stitcher caches unbounded groups of pending chunks, and a pending 
 new ChunksStitcher.Builder().build()
 ```
 
-Both aspects of the default, though, can be customized. The following stitcher will discard a group of chunks if 2 seconds have passed since the stitcher was asked to stitch the very first chunk of the group but hasn't received all the chunks needed to retore the whole group of chunks back to the original data:
+Both aspects of the default, though, can be customized. The following stitcher will discard a group of chunks if 2 seconds have passed since the stitcher was asked to stitch the very first chunk of the group, but hasn't received all the chunks needed to retore the whole group back to the original data unit:
 
 ```
 new ChunksStitcher.Builder().maxStitchTimeMillis(2000).build()
