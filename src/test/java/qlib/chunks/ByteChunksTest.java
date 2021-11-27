@@ -51,8 +51,8 @@ public class ByteChunksTest {
                     .ifPresent(originalDataBytes -> stitched.add(originalDataBytes));
         });
 
-        final int originalDataCount = 2;
-        assertEquals(originalDataCount, stitched.size());
+        final int originalDataUnits = 2;
+        assertEquals(originalDataUnits, stitched.size());
         final String dataStitched1 = new String(stitched.get(0));
         final String dataStitched2 = new String(stitched.get(1));
         if (!DATA_TEXT1.equals(dataStitched1))
