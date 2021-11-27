@@ -39,11 +39,14 @@ import java.util.logging.Logger;
 public final class ChunksStitcher implements Stitcher {
 
     private static final Logger LOG = Logger.getLogger(ChunksStitcher.class.getName());
-    private static final long DEFAULT_MAX_CHUNKS_GROUP_COUNT = Long.MAX_VALUE;
+    private static final long DEFAULT_MAX_CHUNK_GROUP_COUNT = Long.MAX_VALUE;
     private static final long DEFAULT_MAX_STITCH_TIME_MILLIS = Long.MAX_VALUE;
 
     private static byte[] stitchAll(List<Chunk> group) {
         byte[] groupBytes = new byte[getGroupBytesSize(group)];
+        Collections.sort(group, (chunk1, chunk2) -> {
+            return chunk1.getChunkPosition() - chunk2.getChunkPosition();
+        });
         int groupBytesPosition = 0;
         for (Chunk chunk : group) {
             final int chunkBytesLength = chunk.getBytes().length;
@@ -64,11 +67,11 @@ public final class ChunksStitcher implements Stitcher {
     private ChunksStitcher(Builder builder) {
         final long maxStitchTimeMillis = builder.maxStitchTimeMillis == null ? DEFAULT_MAX_STITCH_TIME_MILLIS
                 : builder.maxStitchTimeMillis;
-        final long maxGroups = builder.maxGroups == null ? DEFAULT_MAX_CHUNKS_GROUP_COUNT : builder.maxGroups;
+        final long maxGroups = builder.maxGroups == null ? DEFAULT_MAX_CHUNK_GROUP_COUNT : builder.maxGroups;
         this.chunkGroups = Caffeine.newBuilder()
-                .evictionListener(new LoggingListener(maxStitchTimeMillis, maxGroups))
                 .expireAfterWrite(maxStitchTimeMillis, TimeUnit.MILLISECONDS)
                 .maximumSize(maxGroups)
+                .evictionListener(new LoggingListener(maxStitchTimeMillis, maxGroups))
                 .build();
     }
 
@@ -86,9 +89,6 @@ public final class ChunksStitcher implements Stitcher {
             return Optional.empty();
         }
         chunkGroups.invalidate(groupId);
-        Collections.sort(chunks, (c1, c2) -> {
-            return c1.getChunkPosition() - c2.getChunkPosition();
-        });
         return Optional.of(stitchAll(chunks));
     }
 
@@ -128,14 +128,12 @@ public final class ChunksStitcher implements Stitcher {
             switch (cause) {
                 case EXPIRED:
                     LOG.log(Level.SEVERE,
-                            "Chunk group {0} took too long to stitch and expired after {1} milliseconds, expected {2} chunks but only {3} received when expired",
+                            "Chunk group {0} took too long to stitch and expired after {1} milliseconds, expected {2} chunks but only received {3} when expired",
                             new Object[] { groupId, maxStitchTimeMillis, chunks.get(0)
                                     .getGroupSize(), chunks.size() });
                 case SIZE:
-                    LOG.log(Level.SEVERE,
-                            "Chunk group {0} was removed due to exceeding max group count {1}, expected {2} chunks in the group but only got {3} when removed",
-                            new Object[] { groupId, maxGroups, chunks.get(0)
-                                    .getGroupSize(), chunks.size() });
+                    LOG.log(Level.SEVERE, "Chunk group {0} was removed due to exceeding max group count {1}",
+                            new Object[] { groupId, maxGroups });
             }
         }
     }
