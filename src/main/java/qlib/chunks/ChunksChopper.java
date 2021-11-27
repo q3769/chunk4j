@@ -30,42 +30,48 @@ import java.util.UUID;
  */
 public final class ChunksChopper implements Chopper {
 
-    public static ChunksChopper ofChunkByteCapacity(int chunkByteCapacity) {
-        return new ChunksChopper(chunkByteCapacity);
+    public static ChunksChopper ofChunkByteSize(int maxChunkByteSize) {
+        return new ChunksChopper(Chunk.Capacity.ofByteSize(maxChunkByteSize));
     }
 
-    private final int chunkByteCapacity;
+    private final Chunk.Capacity chunkCapacity;
 
-    private ChunksChopper(int chunkByteCapacity) {
-        this.chunkByteCapacity = chunkByteCapacity;
+    private ChunksChopper(Chunk.Capacity chunkByteCapacity) {
+        this.chunkCapacity = chunkByteCapacity;
     }
 
     @Override
     public List<Chunk> chop(byte[] bytes) {
         final UUID groupId = UUID.randomUUID();
         final int groupSize = numberOfChunks(bytes);
+        final int chunkSize = getChunkByteCapacity();
         final List<Chunk> chunks = new ArrayList<>();
         int start = 0;
-        int chunkPosition = 0;
+        int chunkIndex = 0;
         while (start < bytes.length) {
-            int end = Math.min(bytes.length, start + chunkByteCapacity);
+            int end = Math.min(bytes.length, start + chunkSize);
             final byte[] chunkBytes = Arrays.copyOfRange(bytes, start, end);
             chunks.add(Chunk.builder()
-                    .byteCapacity(chunkByteCapacity)
+                    .capacity(chunkCapacity)
                     .groupId(groupId)
                     .groupSize(groupSize)
-                    .chunkPosition(chunkPosition++)
+                    .index(chunkIndex++)
                     .bytes(chunkBytes)
                     .build());
-            start += chunkByteCapacity;
+            start += chunkSize;
         }
         assert groupSize == chunks.size();
         return chunks;
     }
 
     private int numberOfChunks(byte[] bytes) {
-        int chunkCount = bytes.length / chunkByteCapacity;
-        return bytes.length % chunkByteCapacity == 0 ? chunkCount : chunkCount + 1;
+        final int chunkSize = getChunkByteCapacity();
+        int chunkCount = bytes.length / chunkSize;
+        return bytes.length % chunkSize == 0 ? chunkCount : chunkCount + 1;
+    }
+
+    private int getChunkByteCapacity() {
+        return this.chunkCapacity.getByteSize();
     }
 
 }

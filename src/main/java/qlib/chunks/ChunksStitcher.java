@@ -45,7 +45,7 @@ public final class ChunksStitcher implements Stitcher {
     private static byte[] stitchAll(List<Chunk> group) {
         byte[] groupBytes = new byte[getGroupBytesSize(group)];
         Collections.sort(group, (chunk1, chunk2) -> {
-            return chunk1.getChunkPosition() - chunk2.getChunkPosition();
+            return chunk1.getIndex() - chunk2.getIndex();
         });
         int groupBytesPosition = 0;
         for (Chunk chunk : group) {

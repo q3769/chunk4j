@@ -45,9 +45,9 @@ As the API user, though, you don't need to be concerned with the intricacies of 
 public class Chunk implements Serializable {
 
     /**
-     * Maximum data byte size a chunk can hold.
+     * Maximum data byte byteSize a chunk can hold.
      */
-    int byteCapacity;
+    Capacity capacity;
 
     /**
      * The group ID of the original data blob. All chunks in the same group share the same group ID.
@@ -60,9 +60,9 @@ public class Chunk implements Serializable {
     int groupSize;
 
     /**
-     * Ordered index at which this current chunk is positioned inside the chunk group.
+     * Ordered index at which this current chunk is positioned inside the group.
      */
-    int chunkPosition;
+    int index;
 
     /**
      * Data bytes chopped for this current chunk to hold. Every chunk in the group should hold bytes of size equal to
@@ -70,6 +70,16 @@ public class Chunk implements Serializable {
      */
     byte[] bytes;
 
+    @Value
+    public static class Capacity implements Serializable {
+
+        public static Capacity ofByteSize(int byteSize) {
+            return new Capacity(byteSize);
+        }
+
+        int byteSize;
+
+    }
 }
 ```
 
@@ -87,7 +97,7 @@ On the chopper side, a data blob (bytes) is chopped into a group of chunks. Inte
 ```
 public class MySender {
 
-	priviate Chopper chopper = ChunksChopper.ofChunkByteCapacity(1024); // each chopped off chunk holds up to 1024 bytes
+	priviate Chopper chopper = ChunksChopper.ofChunkByteSize(1024); // each chopped off chunk holds up to 1024 bytes
 	
 	...
 
