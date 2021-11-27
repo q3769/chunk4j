@@ -2,7 +2,7 @@
 
 # Chunks
 
-A Java API to chop up larger data blobs into smaller "chunks" with pre-defined size, and stitch the chunks back together to restore the original data when needed.
+A Java API to chop up larger data blobs into smaller "chunks" of pre-defined size, and stitch the chunks back together to restore the original data when needed.
 
 ## User story
 
