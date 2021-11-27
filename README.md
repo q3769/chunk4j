@@ -47,7 +47,7 @@ public class Chunk implements Serializable {
     /**
      * Maximum data byte byteSize a chunk can hold.
      */
-    Capacity capacity;
+    int byteCapacity;
 
     /**
      * The group ID of the original data blob. All chunks in the same group share the same group ID.
@@ -69,17 +69,6 @@ public class Chunk implements Serializable {
      * the chunk's full capacity except maybe the last one in the group.
      */
     byte[] bytes;
-
-    @Value
-    public static class Capacity implements Serializable {
-
-        public static Capacity ofByteSize(int byteSize) {
-            return new Capacity(byteSize);
-        }
-
-        int byteSize;
-
-    }
 }
 ```
 
