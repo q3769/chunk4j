@@ -149,15 +149,13 @@ public class MyReceiver {
 
 The stitcher caches all "pending" chunks it has received via the `stitch` method in different groups, each group representing one original data unit. When an incoming `chunk` renders its group "complete" - i.e. the group has gathered all the chunks needed to restore the whole group of chunks back to the original data unit - then such group of chunks are stitched back together for original data restoration. As soon as the original data unit is restored and returned by the `stitch` method, all chunks in the group are evicted from the cache.
 
-By default,
+By default, a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded no matter how much time has passed without being able to restore the group back to the original data unit:
 
 ```
 new ChunksStitcher.Builder().build()
 ```
 
-a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded no matter how much time has passed without being able to restore the group back to the original data unit. Both aspects of the default, though, can be customized.
-
-The following stitcher will discard a group of chunks if 2 seconds have passed since the stitcher was asked to stitch the very first chunk of the group but hasn't received all the chunks needed to retore the whole group of chunks back to the original data:
+Both aspects of the default, though, can be customized. The following stitcher will discard a group of chunks if 2 seconds have passed since the stitcher was asked to stitch the very first chunk of the group but hasn't received all the chunks needed to retore the whole group of chunks back to the original data:
 
 ```
 new ChunksStitcher.Builder().maxStitchTimeMillis(2000).build()
