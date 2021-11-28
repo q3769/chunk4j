@@ -62,7 +62,7 @@ public class Chunk implements Serializable {
     /**
      * Ordered index at which this current chunk is positioned inside the group. Chunks are chopped off from the
      * original data bytes in sequential order, indexed as such, and assigned with the same group ID as all other chunks
-     * in the group that represents the original data bytes.
+     * in the group that represents the same original data bytes.
      */
     int index;
 
