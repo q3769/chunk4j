@@ -86,19 +86,24 @@ public interface Chopper {
 On the chopper side, a data blob (bytes) is chopped into a group of chunks. You only have to say how big you want the chunks chopped up to be. Internally, the chopper will divide up the original data bytes based on the chunk size you specified, and assign a unique group ID to all the chunks in the same group representing the original data unit.
 
 ```
-public class MySender {
+public class MessageProducer {
 
-	priviate Chopper chopper = ChunksChopper.ofChunkByteSize(1024); // each chopped off chunk holds up to 1024 bytes
-	
-	...
+    priviate Chopper chopper = ChunksChopper.ofChunkByteSize(1024); // each chopped off chunk holds up to 1024 bytes
+    prviate MessagingTransport transport = ...;
+    
+    ...
 
-	public void send(String dataText) {
-		List<Chunk> chunks = chopper.chop(dataText.getBytes());
-		transport.sendAll(chunks);
-	}
+    /**
+     * Sender business method
+     */
+    public void send(String dataText) {
+        List<Chunk> chunks = this.chopper.chop(dataText.getBytes());
+        this.transport.sendAll(chunks);
+    }
 
-	...
+    ...
 }
+
 ```
 
 ### The Stitcher
@@ -118,24 +123,29 @@ public interface Stitcher {
 On the stitcher side, the `stitch` method is called repeatedly on all chunks. On each call, if a meaningful group of chunks can form to restore a complete original data blob (bytes), such bytes are returned inside an `Optional`; otherwise, the `stitch` method caches the `chunk` and returns an empty `Optional`. i.e. You keep calling the `stitch` method with each and every chunk you receive; you'll know you get a restored original data unit when the method returns a non-empty optional that contains the restored bytes.  
 
 ```
-public class MyReceiver {
+public class MessageConsumer {
 
-	private Stitcher stitcher = new ChunksStitcher.Builder().build();
-	
-	...
+    private Stitcher stitcher = new ChunksStitcher.Builder().build();
+    
+    ...
 
-
-	public void onReceiving(Chunk chunk) {
-		final Optional<byte[]> stitchedBytes = stitcher.stitch(chunk);
-		stitchedBytes.ifPresent(originalDataBytes -> processOriginalData(new String(originalDataBytes));
-	}
-	
-	private void processOriginalData(String dataText) {
-		...
-	}
-	
-	...
-
+    /**
+     * Suppose the run-time invocation of this method is managed by messaging provider/transport
+     */
+    public void onReceiving(Chunk chunk) {
+        final Optional<byte[]> stitchedBytes = this.stitcher.stitch(chunk);
+        stitchedBytes.ifPresent(originalDataBytes -> this.consume(new String(originalDataBytes));
+    }
+    
+    /**
+     * Consumer business method
+     */
+    private void consume(String dataText) {
+        ...
+    }
+    
+    ...
+}
 ```
 
 The stitcher caches all "pending" chunks it has received via the `stitch` method in different groups, each group representing one original data unit. When an incoming `chunk` renders its group "complete" - i.e. the group has gathered all the chunks needed to restore the whole group of chunks back to the original data unit - then such group of chunks are stitched back together for original data restoration. As soon as the original data unit is restored and returned by the `stitch` method, all chunks in the restored group are evicted from the cache.
