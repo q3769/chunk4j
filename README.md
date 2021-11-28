@@ -37,7 +37,7 @@ implementation 'io.github.q3769.qlib:chunks:20211127.0.1'
 
 A larger blob of data can be chopped up into smaller "chunks" to form a "group". When needed, often on a different network node, the group of chunks can be collectively stitched back together to restore the original data. A group has to gather all the originally chopped chunks in order to be stitched and restored back to the original data blob.
 
-As the API user, though, you don't need to be concerned about the intricacies of the `Chunk` - it suffices to know that `Chunk` is a `Serializable` POJO with an upper byte size capacity. Instead, you can directly work with `Chopper` and `Stitcher`, and only be concerned with your own data bytes.
+As the API user, though, you don't need to be concerned about the intricacies of the `Chunk` - it suffices to know that `Chunk` is a `Serializable` POJO with an upper byte size capacity. Instead, you can directly work with `Chopper` and `Stitcher`, and only be concerned with your own original data bytes.
 
 ```
 @Value
