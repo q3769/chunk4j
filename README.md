@@ -113,7 +113,7 @@ public interface Stitcher {
 
 ```
 
-On the stitcher side, the `stitch` method is called repeatedly on all chunks. On each call, if a meaningful group of chunks can form to restore a complete original data blob (bytes), such bytes are returned inside an `Optional`; otherwise, the `stitch` method caches the `chunk` and returns an empty `Optional`.
+On the stitcher side, the `stitch` method is called repeatedly on all chunks. On each call, if a meaningful group of chunks can form to restore a complete original data blob (bytes), such bytes are returned inside an `Optional`; otherwise, the `stitch` method caches the `chunk` and returns an empty `Optional`. i.e. You keep calling the `stitch` method with each and every chunk you receive; you'll know you get a restored original data unit when the method returns a non-empty optional that contains the restored bytes.  
 
 ```
 public class MyReceiver {
