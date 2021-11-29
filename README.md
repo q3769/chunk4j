@@ -94,7 +94,7 @@ public class MessageProducer {
     ...
 
     /**
-     * Sender business method
+     * Sender method of business data
      */
     public void send(String dataText) {
         List<Chunk> chunks = this.chopper.chop(dataText.getBytes());
@@ -138,7 +138,7 @@ public class MessageConsumer {
     }
     
     /**
-     * Consumer business method
+     * Consumer method of business data
      */
     private void consume(String dataText) {
         ...
