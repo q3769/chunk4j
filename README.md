@@ -106,8 +106,6 @@ public class MessageProducer {
 
 ```
 
-- Hint on the chunk size/capacity: The Chunks API works completely on the application level of the network (Layer 7). In case you have a hard limit of message size on the transport level, you want to make sure to set the byte capacity such that the size stays within the transport limit after the entire chunk is serialized. Know that there is a (small) fixed size overhead between the value of `Chunk.getByteCapacity()` and the final size of the serialized chunk.
-
 ### The Stitcher
 
 ```
@@ -152,8 +150,6 @@ public class MessageConsumer {
 
 The stitcher caches all "pending" chunks it has received via the `stitch` method in different groups, each group representing one original data unit. When an incoming `chunk` renders its group "complete" - i.e. the group has gathered all the chunks needed to restore the whole group of chunks back to the original data unit - then such group of chunks are stitched back together for original data restoration. As soon as the original data unit is restored and returned by the `stitch` method, all chunks in the restored group are evicted from the cache.
 
-- Hint on message acknowlegment/commit: This of outside the scope of the Chunks API. Suppose you are using the API with a messaging provider. You'd want to acknowlege/commit all the messages of an entire group of chunks in an all-or-nothing fashion, e.g. by using the individual and explicit commit mechanism. The all-or-nothing group commits ensure, in the case of producer/consumer node crash, no original data units get lost. If, however, the messaging provider lacks such mechanism that makes the all-or-nothing commit possible, then in case of node crash, it is possible that the original data unit(s) whose group(s) of chunks got "cut off" at the time of crash will be lost in transportation. All chunks of a group form a "session" that represents the original data unit. Loss of such sessions is similar to the case where active web sessions get lost when a stateful web application node hosting those sessions fails.
-
 By default, a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded no matter how much time has passed without being able to restore the group back to the original data unit:
 
 ```
@@ -177,3 +173,13 @@ This stitcher is customized by a combination of both aspects:
 ```
 new ChunksStitcher.Builder().maxStitchTimeMillis(2000).maxGroups(100).build()
 ```
+
+### Hints on using Chunks API in messaging
+
+#### Chunk size/capacity
+
+The Chunks API works completely on the application level of the network (Layer 7). In messaging, usually you'd transport one chunk per each message. In case you have a hard limit of message size on the transport level, you want to make sure to set the chunk's byte capacity such that the size stays within the transport limit after the entire chunk/message is serialized. Know that there is a (small) fixed size overhead between the value of `Chunk.getByteCapacity()` and the final size of the serialized chunk.
+
+#### Message acknowlegment/commit
+
+This of outside the scope of the Chunks API. When working with a messaging provider, you'd want to acknowlege/commit all the messages of an entire group of chunks in an all-or-nothing fashion, e.g. by using the individual and explicit commit mechanism. The all-or-nothing group commits ensure, in the case of producer/consumer node crash, no original data units get lost. If, however, the particular messaging provider lacks such mechanism that enables the all-or-nothing commit, then in case of node crash, it is possible that the original data unit(s) whose group(s) of chunks got "cut off" at the time of crash will be lost in transportation. All chunks of a group form a "session" that represents the original data unit. Loss of such sessions is similar to the case where active web sessions get lost when a stateful web application node hosting those sessions fails.
