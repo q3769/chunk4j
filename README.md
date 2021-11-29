@@ -96,7 +96,7 @@ public class MessageProducer {
     /**
      * Sender method of business data
      */
-    public void send(String dataText) {
+    public void sendBusinessData(String dataText) {
         List<Chunk> chunks = this.chopper.chop(dataText.getBytes());
         this.transport.sendAll(chunks);
     }
@@ -136,13 +136,13 @@ public class MessageConsumer {
      */
     public void onReceiving(Chunk chunk) {
         final Optional<byte[]> stitchedBytes = this.stitcher.stitch(chunk);
-        stitchedBytes.ifPresent(originalDataBytes -> this.consume(new String(originalDataBytes));
+        stitchedBytes.ifPresent(originalDataBytes -> this.consumeBusinessData(new String(originalDataBytes));
     }
     
     /**
      * Consumer method of business data
      */
-    private void consume(String dataText) {
+    private void consumeBusinessData(String dataText) {
         ...
     }
     
