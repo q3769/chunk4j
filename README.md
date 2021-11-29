@@ -106,7 +106,7 @@ public class MessageProducer {
 
 ```
 
-Hint on chunk capacity: The Chunks API works completely on the applcation level of the network (Layer 7). In case you have a hard limit of message size on the transport level, you want to make sure to set the chunk capacity such that the entire chunk stays within the transport limit once serialized. i.e. Leave enough room between the capacity number and the hard limit.
+Hint on chunk capacity: The Chunks API works completely on the application level of the network (Layer 7). In case you have a hard limit of message size on the transport level, you want to make sure to set the chunk capacity such that the entire chunk stays within the transport limit once serialized. I.e. leave enough room between the capacity number and the hard limit.
 
 ### The Stitcher
 
