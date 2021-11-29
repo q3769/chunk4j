@@ -106,7 +106,7 @@ public class MessageProducer {
 
 ```
 
-Hint on the chunk size/capacity: The Chunks API works completely on the application level of the network (Layer 7). In case you have a hard limit of message size on the transport level, you want to make sure to set the byte capacity such that the size stays within the transport limit after the entire chunk is serialized. Know that there is (small) additional overhead between the value of `Chunk.getByteCapacity()` and the final size of the serialized chunk.
+Hint on the chunk size/capacity: The Chunks API works completely on the application level of the network (Layer 7). In case you have a hard limit of message size on the transport level, you want to make sure to set the byte capacity such that the size stays within the transport limit after the entire chunk is serialized. Know that there is a (small) fixed size overhead between the value of `Chunk.getByteCapacity()` and the final size of the serialized chunk.
 
 ### The Stitcher
 
