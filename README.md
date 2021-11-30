@@ -184,4 +184,12 @@ The Chunks API works completely on the application level of the network (Layer 7
 
 #### Message acknowlegment/commit
 
-When working with a messaging provider, you want to acknowlege/commit all the messages of an entire group of chunks in an all-or-nothing fashion, e.g. by using the individual and explicit commit mechanism. The all-or-nothing group commits help ensure, in the case of producer/consumer node crash, no original data units get lost after node recovery. If, however, the particular messaging provider lacks such mechanism that enables the all-or-nothing commit, then in case of node crash, it is possible that the original data unit(s) whose group(s) of chunks got "cut off in the middle" at the time of crash will be lost in transportation. All chunks of a group form a "session" that represents the original data unit. Loss of such sessions is similar to the case where active web sessions get lost when a stateful web application node hosting those sessions fails.
+When working with a messaging provider, you want to acknowlege/commit all the messages of an entire group of chunks in an all-or-nothing fashion, e.g. by using the individual and explicit commit mechanism. The all-or-nothing group commits help ensure, in the case of producer/consumer node crash, no original data units get lost after node recovery. 
+
+If, however, the particular messaging provider lacks such mechanism that enables the all-or-nothing commit, then in case of node crash, it is possible that the original data unit whose group of chunks gets "cut off in the middle" at the time of crash will be lost in transportation. All chunks of a group form a "session" that represents the original data unit. Loss of such sessions is similar to the case where active web sessions get lost when a stateful web application node hosting those sessions fails. To assess the potential "damage", you may neend to ask in your system:
+
+- How often does an original data unit truly need more than one chunk to hold?
+- How often does a node crash or go in and out of the system?
+- What are the odds for those larger-than-one-chunk data units to be in transit right at the time the node crashes out?
+
+
