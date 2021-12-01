@@ -43,7 +43,8 @@ public final class ChunksStitcher implements Stitcher {
     private static final long DEFAULT_MAX_STITCH_TIME_MILLIS = Long.MAX_VALUE;
 
     private static byte[] stitchAll(List<Chunk> group) {
-        byte[] groupBytes = new byte[getGroupBytesSize(group)];
+        assert ofSameId(group);
+        byte[] groupBytes = new byte[getTotalByteSize(group)];
         Collections.sort(group, (chunk1, chunk2) -> {
             return chunk1.getIndex() - chunk2.getIndex();
         });
@@ -56,10 +57,17 @@ public final class ChunksStitcher implements Stitcher {
         return groupBytes;
     }
 
-    private static int getGroupBytesSize(List<Chunk> group) {
+    private static int getTotalByteSize(List<Chunk> group) {
         return group.stream()
                 .mapToInt(chunk -> chunk.getBytes().length)
                 .sum();
+    }
+
+    private static boolean ofSameId(List<Chunk> group) {
+        return group.stream()
+                .map(chunk -> chunk.getGroupId())
+                .distinct()
+                .count() == 1;
     }
 
     private final Cache<UUID, List<Chunk>> chunkGroups;
@@ -71,7 +79,7 @@ public final class ChunksStitcher implements Stitcher {
         this.chunkGroups = Caffeine.newBuilder()
                 .expireAfterWrite(maxStitchTimeMillis, TimeUnit.MILLISECONDS)
                 .maximumSize(maxGroups)
-                .evictionListener(new LoggingListener(maxStitchTimeMillis, maxGroups))
+                .evictionListener(new InvoluntaryRemvoalLogger(maxStitchTimeMillis, maxGroups))
                 .build();
     }
 
@@ -113,12 +121,12 @@ public final class ChunksStitcher implements Stitcher {
 
     }
 
-    private static class LoggingListener implements RemovalListener<UUID, List<Chunk>> {
+    private static final class InvoluntaryRemvoalLogger implements RemovalListener<UUID, List<Chunk>> {
 
         private final long maxStitchTimeMillis;
         private final long maxGroups;
 
-        public LoggingListener(long maxStitchTimeMillis, long maxGroups) {
+        public InvoluntaryRemvoalLogger(long maxStitchTimeMillis, long maxGroups) {
             this.maxStitchTimeMillis = maxStitchTimeMillis;
             this.maxGroups = maxGroups;
         }
