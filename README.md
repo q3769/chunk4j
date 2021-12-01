@@ -1,14 +1,12 @@
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.q3769.qlib/chunks.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.q3769.qlib%22%20AND%20a:%22chunks%22)
-
-# Chunks
+# chunk4j
 
 A Java API to chop up larger data blobs into smaller "chunks" of a pre-defined size, and stitch the chunks back together to restore the original data when needed.
 
 ## User story
 
-As a user of the Chunks API, I want to be able to chop data blobs (bytes) into pieces of a pre-defined size and, when needed, restore the original data by stitching the pieces back together.
+As a user of the chunk4j API, I want to be able to chop data blobs (bytes) into pieces of a pre-defined size and, when needed, restore the original data by stitching the pieces back together.
 
-Note that the separate processes of "chop" and "stitch" often happen on different network compute nodes, and the chunks are transported between the nodes in a possibly random order. While being a generic Java API, "Chunks" comes in handy when you have to send, over the network, messages whose sizes may be exceeding what is allowed by the messaging transport.
+Note that the separate processes of "chop" and "stitch" often happen on different network compute nodes, and the chunks are transported between the nodes in a possibly random order. While being a generic Java API, chunk4j comes in handy when you have to send, over the network, messages whose sizes may be exceeding what is allowed by the messaging transport.
 
 ## Prerequisite
 Java 8 or better
@@ -20,7 +18,7 @@ In Maven
 ```
 <dependency>
     <groupId>io.github.q3769.qlib</groupId>
-    <artifactId>chunks</artifactId>
+    <artifactId>chunk4j</artifactId>
     <version>20211127.0.4</version>
 </dependency>
 ```
@@ -28,7 +26,7 @@ In Maven
 In Gradle
 
 ```
-implementation 'io.github.q3769.qlib:chunks:20211127.0.4'
+implementation 'io.github.q3769.qlib:chunk4j:20211127.0.4'
 ```
 
 ## Use it...
@@ -178,13 +176,13 @@ This stitcher is customized by a combination of both aspects:
 new ChunksStitcher.Builder().maxStitchTimeMillis(2000).maxGroups(100).build()
 ```
 
-### Hints on using Chunks API in messaging
+### Hints on using chunk4j API in messaging
 
-These are independent of the Chunks API itself but...
+These are independent of the chunk4j API itself but...
 
 #### Chunk size/capacity
 
-The Chunks API works completely on the application level of the network (Layer 7). In messaging, usually you'd transport one single chunk per each message. In case you have a hard limit of message size on the transport level, you want to make sure to set the chunk's byte capacity such that the size stays within the transport limit after the entire chunk/message is serialized. Know that there is a (small) fixed size overhead between the value of `Chunk.getByteCapacity()` and the final size of the serialized chunk.
+Chunk4j works completely on the application level of the network (Layer 7). In messaging, usually you'd transport one single chunk per each message. In case you have a hard limit of message size on the transport level, you want to make sure to set the chunk's byte capacity such that the size stays within the transport limit after the entire chunk/message is serialized. Know that there is a (small) fixed size overhead between the value of `Chunk.getByteCapacity()` and the final size of the serialized chunk.
 
 #### Message acknowlegment/commit
 
@@ -195,5 +193,3 @@ If, however, the particular messaging provider lacks such mechanism that enables
 - At run-time, how often does an original data unit truly need more than one chunk to hold?
 - How often does a node crash or go in and out of the system?
 - What are the odds for those larger-than-one-chunk data units to be in transit right at the time the node crashes out?
-
-
