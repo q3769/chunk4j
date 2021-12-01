@@ -26,8 +26,10 @@ import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.github.benmanes.caffeine.cache.RemovalListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -42,14 +44,15 @@ public final class ChunksStitcher implements Stitcher {
     private static final long DEFAULT_MAX_CHUNK_GROUP_COUNT = Long.MAX_VALUE;
     private static final long DEFAULT_MAX_STITCH_TIME_MILLIS = Long.MAX_VALUE;
 
-    private static byte[] stitchAll(List<Chunk> group) {
+    private static byte[] stitchAll(Set<Chunk> group) {
         assert ofSameId(group);
         byte[] groupBytes = new byte[getTotalByteSize(group)];
-        Collections.sort(group, (chunk1, chunk2) -> {
+        List<Chunk> orderedGroup = new ArrayList<>(group);
+        Collections.sort(orderedGroup, (chunk1, chunk2) -> {
             return chunk1.getIndex() - chunk2.getIndex();
         });
         int groupBytesPosition = 0;
-        for (Chunk chunk : group) {
+        for (Chunk chunk : orderedGroup) {
             final int chunkBytesLength = chunk.getBytes().length;
             System.arraycopy(chunk.getBytes(), 0, groupBytes, groupBytesPosition, chunkBytesLength);
             groupBytesPosition += chunkBytesLength;
@@ -57,20 +60,20 @@ public final class ChunksStitcher implements Stitcher {
         return groupBytes;
     }
 
-    private static int getTotalByteSize(List<Chunk> group) {
+    private static int getTotalByteSize(Set<Chunk> group) {
         return group.stream()
                 .mapToInt(chunk -> chunk.getBytes().length)
                 .sum();
     }
 
-    private static boolean ofSameId(List<Chunk> group) {
+    private static boolean ofSameId(Set<Chunk> group) {
         return group.stream()
                 .map(chunk -> chunk.getGroupId())
                 .distinct()
                 .count() == 1;
     }
 
-    private final Cache<UUID, List<Chunk>> chunkGroups;
+    private final Cache<UUID, Set<Chunk>> chunkGroups;
 
     private ChunksStitcher(Builder builder) {
         final long maxStitchTimeMillis = builder.maxStitchTimeMillis == null ? DEFAULT_MAX_STITCH_TIME_MILLIS
@@ -86,18 +89,19 @@ public final class ChunksStitcher implements Stitcher {
     @Override
     public Optional<byte[]> stitch(Chunk chunk) {
         final UUID groupId = chunk.getGroupId();
-        List<Chunk> chunks = chunkGroups.getIfPresent(groupId);
-        if (chunks == null) {
-            chunks = new ArrayList<>(List.of(chunk));
-            chunkGroups.put(groupId, chunks);
-        } else {
-            chunks.add(chunk);
+        synchronized (groupId) {
+            final Set<Chunk> chunks = chunkGroups.get(groupId, (key) -> {
+                return new HashSet<>();
+            });
+            if (!chunks.add(chunk)) {
+                LOG.log(Level.WARNING, "Received and ignoring duplicate chunk: {0}", chunk);
+            }
+            if (chunks.size() != chunk.getGroupSize()) {
+                return Optional.empty();
+            }
+            chunkGroups.invalidate(groupId);
+            return Optional.of(stitchAll(chunks));
         }
-        if (chunks.size() != chunk.getGroupSize()) {
-            return Optional.empty();
-        }
-        chunkGroups.invalidate(groupId);
-        return Optional.of(stitchAll(chunks));
     }
 
     static public class Builder {
@@ -121,7 +125,7 @@ public final class ChunksStitcher implements Stitcher {
 
     }
 
-    private static final class InvoluntaryRemvoalLogger implements RemovalListener<UUID, List<Chunk>> {
+    private static final class InvoluntaryRemvoalLogger implements RemovalListener<UUID, Set<Chunk>> {
 
         private final long maxStitchTimeMillis;
         private final long maxGroups;
@@ -132,12 +136,14 @@ public final class ChunksStitcher implements Stitcher {
         }
 
         @Override
-        public void onRemoval(UUID groupId, List<Chunk> chunks, RemovalCause cause) {
+        public void onRemoval(UUID groupId, Set<Chunk> chunks, RemovalCause cause) {
             switch (cause) {
                 case EXPIRED:
                     LOG.log(Level.SEVERE,
                             "Chunk group {0} took too long to stitch and expired after {1} milliseconds, expected {2} chunks but only received {3} when expired",
-                            new Object[] { groupId, maxStitchTimeMillis, chunks.get(0)
+                            new Object[] { groupId, maxStitchTimeMillis, chunks.stream()
+                                    .findFirst()
+                                    .get()
                                     .getGroupSize(), chunks.size() });
                 case SIZE:
                     LOG.log(Level.SEVERE, "Chunk group {0} was removed due to exceeding max group count {1}",

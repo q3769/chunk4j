@@ -21,6 +21,7 @@
 package qlib.chunks;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Value;
@@ -63,4 +64,30 @@ public class Chunk implements Serializable {
      * the chunk's full capacity except maybe the last one in the group.
      */
     byte[] bytes;
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 47 * hash + Objects.hashCode(this.groupId);
+        hash = 47 * hash + this.index;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Chunk other = (Chunk) obj;
+        if (this.index != other.index) {
+            return false;
+        }
+        return Objects.equals(this.groupId, other.groupId);
+    }
 }

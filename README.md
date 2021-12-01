@@ -71,6 +71,8 @@ public class Chunk implements Serializable {
      * the chunk's full capacity except maybe the last one in the group.
      */
     byte[] bytes;
+	
+	...
 }
 ```
 
