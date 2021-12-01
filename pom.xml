@@ -2,12 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.q3769.qlib</groupId>
-    <artifactId>chunks</artifactId>
-    <version>20211127.0.4</version>
+    <artifactId>chunk4j</artifactId>
+    <version>20211201.0.0</version>
     <packaging>jar</packaging>
-    <name>Chunks</name>
+    <name>chunk4j</name>
     <description>A Java API to chop up larger data blobs into smaller "chunks" of a pre-defined size, and stitch the chunks back together to restore the original data when needed.</description>
-    <url>https://github.com/q3769/chunks</url>
+    <url>https://github.com/q3769/chunk4j</url>
     <licenses>
         <license>
             <name>MIT License</name>
@@ -15,12 +15,12 @@
         </license>
     </licenses>
     <scm>
-        <url>https://github.com/q3769/chunks/tree/master</url>
+        <url>https://github.com/q3769/chunk4j/tree/master</url>
         <connection>
-            scm:git:git://github.com:q3769/chunks.git
+            scm:git:git://github.com:q3769/chunk4j.git
         </connection>
         <developerConnection>
-            scm:git:ssh://github.com:q3769/chunks.git
+            scm:git:ssh://github.com:q3769/chunk4j.git
         </developerConnection>
     </scm>
     <developers>

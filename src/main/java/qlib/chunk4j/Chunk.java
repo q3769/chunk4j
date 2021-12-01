@@ -18,7 +18,7 @@
  * THE SOFTWARE.
  */
 
-package qlib.chunks;
+package qlib.chunk4j;
 
 import java.io.Serializable;
 import java.util.Objects;
