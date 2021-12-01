@@ -94,7 +94,7 @@ public final class ChunksStitcher implements Stitcher {
                 return new HashSet<>();
             });
             if (!chunks.add(chunk)) {
-                LOG.log(Level.WARNING, "Received and ignoring duplicate chunk: {0}", chunk);
+                LOG.log(Level.WARNING, "Received and ignored duplicate chunk: {0}", chunk);
             }
             if (chunks.size() != chunk.getGroupSize()) {
                 return Optional.empty();
