@@ -37,6 +37,8 @@ import lombok.Value;
 @Builder
 public class Chunk implements Serializable {
 
+    private static final long serialVersionUID = 0L;
+
     /**
      * Maximum bytes of data a chunk can hold.
      */
