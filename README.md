@@ -44,6 +44,8 @@ As the API user, though, you don't need to be concerned about the intricacies of
 @Builder
 public class Chunk implements Serializable {
 
+    ...
+
     /**
      * Maximum bytes of data a chunk can hold.
      */
