@@ -145,9 +145,11 @@ public final class ChunksStitcher implements Stitcher {
                                     .findFirst()
                                     .get()
                                     .getGroupSize(), chunks.size() });
+                    break;
                 case SIZE:
                     LOG.log(Level.SEVERE, "Chunk group {0} was removed due to exceeding max group count {1}",
                             new Object[] { groupId, maxGroups });
+                    break;
             }
         }
     }

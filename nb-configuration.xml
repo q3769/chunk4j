@@ -24,5 +24,6 @@ Any value defined here will override the pom.xml file value but is only applicab
         <de-funfried-netbeans-plugins-externalcodeformatter.showNotifications>false</de-funfried-netbeans-plugins-externalcodeformatter.showNotifications>
         <de-funfried-netbeans-plugins-externalcodeformatter.useProjectSettings>false</de-funfried-netbeans-plugins-externalcodeformatter.useProjectSettings>
         <netbeans.hint.license>mit</netbeans.hint.license>
+        <netbeans.hint.jdkPlatform>JDK_1.8</netbeans.hint.jdkPlatform>
     </properties>
 </project-shared-configuration>
