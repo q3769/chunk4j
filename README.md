@@ -194,4 +194,4 @@ If, however, the particular messaging provider lacks such mechanism that enables
 
 - At run-time, how often does an original data unit truly need more than one chunk to hold?
 - How often does a node crash or go in and out of the system?
-- What are the odds for those larger-than-one-chunk data units to be in transit right at the time the node crashes out?
+- What are the odds for those larger-than-one-chunk data units to be in transit at the same time of node crashes?
