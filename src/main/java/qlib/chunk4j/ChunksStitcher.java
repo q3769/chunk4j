@@ -82,7 +82,7 @@ public final class ChunksStitcher implements Stitcher {
         this.chunkGroups = Caffeine.newBuilder()
                 .expireAfterWrite(maxStitchTimeMillis, TimeUnit.MILLISECONDS)
                 .maximumSize(maxGroups)
-                .evictionListener(new InvoluntaryRemvoalLogger(maxStitchTimeMillis, maxGroups))
+                .evictionListener(new InvoluntaryEvictionLogger(maxStitchTimeMillis, maxGroups))
                 .build();
     }
 
@@ -125,12 +125,12 @@ public final class ChunksStitcher implements Stitcher {
 
     }
 
-    private static final class InvoluntaryRemvoalLogger implements RemovalListener<UUID, Set<Chunk>> {
+    private static final class InvoluntaryEvictionLogger implements RemovalListener<UUID, Set<Chunk>> {
 
         private final long maxStitchTimeMillis;
         private final long maxGroups;
 
-        public InvoluntaryRemvoalLogger(long maxStitchTimeMillis, long maxGroups) {
+        public InvoluntaryEvictionLogger(long maxStitchTimeMillis, long maxGroups) {
             this.maxStitchTimeMillis = maxStitchTimeMillis;
             this.maxGroups = maxGroups;
         }
