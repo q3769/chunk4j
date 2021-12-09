@@ -18,19 +18,14 @@
  * THE SOFTWARE.
  */
 
-package qlib.chunk4j;
+package qt.chunk4j;
 
-import java.util.Optional;
+import java.util.List;
 
 /**
  * @author Qingtian Wang
  */
-public interface Stitcher {
+public interface Chopper {
 
-    /**
-     * @param chunk
-     * @return Optional of the original data blob restored by stitching. Contains the restored bytes if the input chunk
-     *         is the last missing piece of the entire group of chunks representing the original data; empty otherwise.
-     */
-    Optional<byte[]> stitch(Chunk chunk);
+    List<Chunk> chop(byte[] bytes);
 }

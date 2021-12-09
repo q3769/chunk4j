@@ -18,7 +18,7 @@
  * THE SOFTWARE.
  */
 
-package qlib.chunk4j;
+package qt.chunk4j;
 
 import java.util.ArrayList;
 import java.util.Arrays;

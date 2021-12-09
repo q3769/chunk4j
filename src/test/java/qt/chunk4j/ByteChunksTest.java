@@ -18,11 +18,8 @@
  * THE SOFTWARE.
  */
 
-package qlib.chunk4j;
+package qt.chunk4j;
 
-import qlib.chunk4j.ChunksChopper;
-import qlib.chunk4j.Chunk;
-import qlib.chunk4j.ChunksStitcher;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

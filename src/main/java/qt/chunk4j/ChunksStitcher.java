@@ -18,7 +18,7 @@
  * THE SOFTWARE.
  */
 
-package qlib.chunk4j;
+package qt.chunk4j;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
