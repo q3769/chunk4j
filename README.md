@@ -19,16 +19,16 @@ In Maven
 
 ```
 <dependency>
-    <groupId>io.github.q3769.qlib</groupId>
+    <groupId>io.github.q3769</groupId>
     <artifactId>chunk4j</artifactId>
-    <version>20211201.0.2</version>
+    <version>20211208.0.0</version>
 </dependency>
 ```
 
 In Gradle
 
 ```
-implementation 'io.github.q3769.qlib:chunk4j:20211201.0.2'
+implementation 'io.github.q3769:chunk4j:20211208.0.0'
 ```
 
 ## Use it...
