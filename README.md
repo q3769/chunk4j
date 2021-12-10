@@ -92,7 +92,7 @@ On the chopper side, a data blob (bytes) is chopped into a group of chunks. You 
 ```
 public class MessageProducer {
 
-    priviate Chopper chopper = ChunksChopper.ofChunkByteSize(1024); // each chopped off chunk holds up to 1024 bytes
+    priviate Chopper chopper = ChunkChopper.ofChunkByteSize(1024); // each chopped off chunk holds up to 1024 bytes
     prviate MessagingTransport transport = ...;
     
     ...
@@ -129,7 +129,7 @@ On the stitcher side, the `stitch` method is called repeatedly on all chunks. On
 ```
 public class MessageConsumer {
 
-    private Stitcher stitcher = new ChunksStitcher.Builder().build();
+    private Stitcher stitcher = new ChunkStitcher.Builder().build();
     
     ...
 
@@ -157,25 +157,25 @@ The stitcher caches all "pending" chunks it has received via the `stitch` method
 By default, a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded no matter how much time has passed without being able to restore the group back to the original data unit:
 
 ```
-new ChunksStitcher.Builder().build()
+new ChunkStitcher.Builder().build()
 ```
 
 Both aspects of the default, though, can be customized. The following stitcher will discard a group of chunks if 2 seconds have passed since the stitcher was asked to stitch the very first chunk of the group, but hasn't received all the chunks needed to retore the whole group back to the original data unit:
 
 ```
-new ChunksStitcher.Builder().maxStitchTimeMillis(2000).build()
+new ChunkStitcher.Builder().maxStitchTimeMillis(2000).build()
 ```
 
 This stitcher will discard some group(s) of chunks when there are more than 100 chunk groups pending restoration:
 
 ```
-new ChunksStitcher.Builder().maxGroups(100).build()
+new ChunkStitcher.Builder().maxGroups(100).build()
 ```
 
 This stitcher is customized by a combination of both aspects:
 
 ```
-new ChunksStitcher.Builder().maxStitchTimeMillis(2000).maxGroups(100).build()
+new ChunkStitcher.Builder().maxStitchTimeMillis(2000).maxGroups(100).build()
 ```
 
 ### Hints on using chunk4j API in messaging
