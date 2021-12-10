@@ -28,15 +28,15 @@ import java.util.UUID;
 /**
  * @author Qingtian Wang
  */
-public final class ChunksChopper implements Chopper {
+public final class ChunkChopper implements Chopper {
 
-    public static ChunksChopper ofChunkByteSize(int maxChunkByteSize) {
-        return new ChunksChopper(maxChunkByteSize);
+    public static ChunkChopper ofChunkByteSize(int maxChunkByteSize) {
+        return new ChunkChopper(maxChunkByteSize);
     }
 
     private final int chunkCapacity;
 
-    private ChunksChopper(int chunkByteCapacity) {
+    private ChunkChopper(int chunkByteCapacity) {
         if (chunkByteCapacity <= 0) {
             throw new IllegalArgumentException("Max size of the byte array in a chunk has to be a positive int: "
                     + chunkByteCapacity);

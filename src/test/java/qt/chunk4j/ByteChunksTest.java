@@ -38,8 +38,8 @@ public class ByteChunksTest {
     @Test
     public void testByteChunks() {
         final int chunkByteCapacity = 4;
-        final ChunksChopper chopper = ChunksChopper.ofChunkByteSize(chunkByteCapacity);
-        final ChunksStitcher stitcher = new ChunksStitcher.Builder().build();
+        final ChunkChopper chopper = ChunkChopper.ofChunkByteSize(chunkByteCapacity);
+        final ChunkStitcher stitcher = new ChunkStitcher.Builder().build();
 
         final List<Chunk> choppedMingledAndScrambledData = new ArrayList<>();
         choppedMingledAndScrambledData.addAll(chopper.chop(DATA_TEXT1.getBytes()));
