@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.q3769</groupId>
     <artifactId>chunk4j</artifactId>
-    <version>20211210.0.2</version>
+    <version>20211210.0.3</version>
     <packaging>jar</packaging>
     <name>chunk4j</name>
     <description>A Java API to chop up larger data blobs into smaller "chunks" of a pre-defined size, and stitch the chunks back together to restore the original data when needed.</description>
@@ -131,7 +131,7 @@
             <plugin>
                 <groupId>io.github.q3769</groupId>
                 <artifactId>semver-maven-plugin</artifactId>
-                <version>20211209.1.0</version>
+                <version>20211209.1.1</version>
             </plugin>
         </plugins>
     </build>
