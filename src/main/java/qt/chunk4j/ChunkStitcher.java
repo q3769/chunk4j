@@ -23,6 +23,8 @@ package qt.chunk4j;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalCause;
+import static com.github.benmanes.caffeine.cache.RemovalCause.EXPIRED;
+import static com.github.benmanes.caffeine.cache.RemovalCause.SIZE;
 import com.github.benmanes.caffeine.cache.RemovalListener;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,9 +50,7 @@ public final class ChunkStitcher implements Stitcher {
         assert ofSameId(group);
         byte[] groupBytes = new byte[getTotalByteSize(group)];
         List<Chunk> orderedGroup = new ArrayList<>(group);
-        Collections.sort(orderedGroup, (chunk1, chunk2) -> {
-            return chunk1.getIndex() - chunk2.getIndex();
-        });
+        Collections.sort(orderedGroup, (chunk1, chunk2) -> chunk1.getIndex() - chunk2.getIndex());
         int groupBytesPosition = 0;
         for (Chunk chunk : orderedGroup) {
             final int chunkBytesLength = chunk.getBytes().length;
@@ -90,9 +90,7 @@ public final class ChunkStitcher implements Stitcher {
     public Optional<byte[]> stitch(Chunk chunk) {
         final UUID groupId = chunk.getGroupId();
         synchronized (groupId) {
-            final Set<Chunk> chunks = chunkGroups.get(groupId, (key) -> {
-                return new HashSet<>();
-            });
+            final Set<Chunk> chunks = chunkGroups.get(groupId, key -> new HashSet<>());
             if (!chunks.add(chunk)) {
                 LOG.log(Level.WARNING, "Received and ignored duplicate chunk: {0}", chunk);
             }
@@ -104,7 +102,7 @@ public final class ChunkStitcher implements Stitcher {
         }
     }
 
-    static public class Builder {
+    public static class Builder {
 
         private Long maxStitchTimeMillis;
         private Long maxGroups;
@@ -137,19 +135,16 @@ public final class ChunkStitcher implements Stitcher {
 
         @Override
         public void onRemoval(UUID groupId, Set<Chunk> chunks, RemovalCause cause) {
-            switch (cause) {
-                case EXPIRED:
-                    LOG.log(Level.WARNING,
-                            "Chunk group {0} took too long to stitch and expired after {1} milliseconds, expected {2} chunks but only received {3} when expired",
-                            new Object[] { groupId, maxStitchTimeMillis, chunks.stream()
-                                    .findFirst()
-                                    .get()
-                                    .getGroupSize(), chunks.size() });
-                    break;
-                case SIZE:
-                    LOG.log(Level.WARNING, "Chunk group {0} was removed due to exceeding max group count {1}",
-                            new Object[] { groupId, maxGroups });
-                    break;
+            if (cause == EXPIRED) {
+                LOG.log(Level.WARNING,
+                        "Chunk group {0} took too long to stitch and expired after {1} milliseconds, expected {2} chunks but only received {3} when expired",
+                        new Object[] { groupId, maxStitchTimeMillis, chunks.stream()
+                                .findFirst()
+                                .get()
+                                .getGroupSize(), chunks.size() });
+            } else if (cause == SIZE) {
+                LOG.log(Level.WARNING, "Chunk group {0} was removed due to exceeding max group count {1}",
+                        new Object[] { groupId, maxGroups });
             }
         }
     }
