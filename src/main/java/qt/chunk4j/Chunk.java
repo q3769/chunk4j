@@ -21,9 +21,9 @@
 package qt.chunk4j;
 
 import java.io.Serializable;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 /**
@@ -34,6 +34,7 @@ import lombok.Value;
  * @author Qingtian Wang
  */
 @Value
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Builder
 public class Chunk implements Serializable {
 
@@ -47,7 +48,16 @@ public class Chunk implements Serializable {
     /**
      * The group ID of the original data blob. All chunks in the same group share the same group ID.
      */
+    @EqualsAndHashCode.Include
     UUID groupId;
+
+    /**
+     * Ordered index at which this current chunk is positioned inside the group. Chunks are chopped off from the
+     * original data bytes in sequential order, indexed as such, and assigned with the same group ID as all other chunks
+     * in the group that represents the original data bytes.
+     */
+    @EqualsAndHashCode.Include
+    int index;
 
     /**
      * Total number of chunks the original data blob is chopped to form the group.
@@ -55,41 +65,8 @@ public class Chunk implements Serializable {
     int groupSize;
 
     /**
-     * Ordered index at which this current chunk is positioned inside the group. Chunks are chopped off from the
-     * original data bytes in sequential order, indexed as such, and assigned with the same group ID as all other chunks
-     * in the group that represents the original data bytes.
-     */
-    int index;
-
-    /**
      * Data bytes chopped for this current chunk to hold. Every chunk in the group should hold bytes of size equal to
      * the chunk's full capacity except maybe the last one in the group.
      */
     byte[] bytes;
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 47 * hash + Objects.hashCode(this.groupId);
-        hash = 47 * hash + this.index;
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Chunk other = (Chunk) obj;
-        if (this.index != other.index) {
-            return false;
-        }
-        return Objects.equals(this.groupId, other.groupId);
-    }
 }

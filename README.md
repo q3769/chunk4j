@@ -37,14 +37,12 @@ implementation 'io.github.q3769:chunk4j:20211210.0.0'
 
 A larger blob of data can be chopped up into smaller "chunks" to form a "group". When needed, often on a different network node, the group of chunks can be collectively stitched back together to restore the original data. A group has to gather all the originally chopped chunks in order to be stitched and restored back to the original data blob.
 
-As the API user, though, you don't need to be concerned about the intricacies of the `Chunk` - it suffices to know that `Chunk` is a `Serializable` POJO with an upper byte size capacity. Instead, you can directly work with `Chopper` and `Stitcher`, and only be concerned with your own original data bytes.
+As the API user, though, you don't need to be concerned about the intricacies of the `Chunk` - how ever few there are - it suffices to know that `Chunk` is a `Serializable` POJO with an upper byte size capacity. Instead, you can directly work with `Chopper` and `Stitcher`, and only be concerned with your own original data bytes.
 
 ```
-@Value
-@Builder
 public class Chunk implements Serializable {
 
-    ...
+    private static final long serialVersionUID = 0L;
 
     /**
      * Maximum bytes of data a chunk can hold.
@@ -54,7 +52,16 @@ public class Chunk implements Serializable {
     /**
      * The group ID of the original data blob. All chunks in the same group share the same group ID.
      */
+    @EqualsAndHashCode.Include
     UUID groupId;
+
+    /**
+     * Ordered index at which this current chunk is positioned inside the group. Chunks are chopped off from the
+     * original data bytes in sequential order, indexed as such, and assigned with the same group ID as all other chunks
+     * in the group that represents the original data bytes.
+     */
+    @EqualsAndHashCode.Include
+    int index;
 
     /**
      * Total number of chunks the original data blob is chopped to form the group.
@@ -62,19 +69,10 @@ public class Chunk implements Serializable {
     int groupSize;
 
     /**
-     * Ordered index at which this current chunk is positioned inside the group. Chunks are chopped off from the
-     * original data bytes in sequential order, indexed as such, and assigned with the same group ID as all other chunks
-     * in the group that represents the same original data bytes.
-     */
-    int index;
-
-    /**
      * Data bytes chopped for this current chunk to hold. Every chunk in the group should hold bytes of size equal to
      * the chunk's full capacity except maybe the last one in the group.
      */
     byte[] bytes;
-    
-    ...
 }
 ```
 
