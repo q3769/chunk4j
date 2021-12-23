@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -88,15 +89,23 @@ public final class ChunkStitcher implements Stitcher {
 
     @Override
     public Optional<byte[]> stitch(Chunk chunk) {
+        LOG.log(Level.FINER, () -> "Received chunk: " + chunk);
         final UUID groupId = chunk.getGroupId();
         synchronized (groupId) {
             final Set<Chunk> chunks = chunkGroups.get(groupId, key -> new HashSet<>());
             if (!chunks.add(chunk)) {
-                LOG.log(Level.WARNING, "Received and ignored duplicate chunk: {0}", chunk);
-            }
-            if (chunks.size() != chunk.getGroupSize()) {
+                LOG.log(Level.WARNING, "Ignoring duplicate chunk: {0}", chunk);
                 return Optional.empty();
             }
+            final int receivedTotal = chunks.size();
+            final int expectedTotal = chunk.getGroupSize();
+            if (receivedTotal != expectedTotal) {
+                LOG.log(Level.FINEST, () -> "Received: " + receivedTotal + " chunks, awaiting expected: "
+                        + expectedTotal + " chunks to start restoring");
+                return Optional.empty();
+            }
+            LOG.log(Level.FINE, () -> "Received all: " + expectedTotal
+                    + " expected chunks, starting to restore orginal data...");
             chunkGroups.invalidate(groupId);
             return Optional.of(stitchAll(chunks));
         }
@@ -135,16 +144,28 @@ public final class ChunkStitcher implements Stitcher {
 
         @Override
         public void onRemoval(UUID groupId, Set<Chunk> chunks, RemovalCause cause) {
-            if (cause == EXPIRED) {
-                LOG.log(Level.WARNING,
-                        "Chunk group {0} took too long to stitch and expired after {1} milliseconds, expected {2} chunks but only received {3} when expired",
-                        new Object[] { groupId, maxStitchTimeMillis, chunks.stream()
-                                .findFirst()
-                                .get()
-                                .getGroupSize(), chunks.size() });
-            } else if (cause == SIZE) {
-                LOG.log(Level.WARNING, "Chunk group {0} was removed due to exceeding max group count {1}",
-                        new Object[] { groupId, maxGroups });
+            Objects.requireNonNull(cause);
+            switch (cause) {
+                case EXPIRED:
+                    LOG.log(Level.SEVERE,
+                            "Chunk group {0} took too long to stitch and expired after {1} milliseconds, expected {2} chunks but only received {3} when expired",
+                            new Object[] { groupId, maxStitchTimeMillis, chunks.stream()
+                                    .findFirst()
+                                    .get()
+                                    .getGroupSize(), chunks.size() });
+                    break;
+                case SIZE:
+                    LOG.log(Level.SEVERE, "Chunk group {0} was removed due to exceeding max group count {1}",
+                            new Object[] { groupId, maxGroups });
+                    break;
+                case EXPLICIT:
+                    break;
+                case REPLACED:
+                    break;
+                case COLLECTED:
+                    break;
+                default:
+                    throw new AssertionError("Unexpected eviction cause: " + cause.name());
             }
         }
     }
