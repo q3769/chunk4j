@@ -48,6 +48,7 @@ public final class ChunkStitcher implements Stitcher {
     private static final long DEFAULT_MAX_STITCH_TIME_MILLIS = Long.MAX_VALUE;
 
     private static byte[] stitchAll(Set<Chunk> group) {
+        LOG.log(Level.FINER, () -> "Start stitching all chunks in group: " + group);
         assert ofSameId(group);
         byte[] groupBytes = new byte[getTotalByteSize(group)];
         List<Chunk> orderedGroup = new ArrayList<>(group);
@@ -58,6 +59,7 @@ public final class ChunkStitcher implements Stitcher {
             System.arraycopy(chunk.getBytes(), 0, groupBytes, groupBytesPosition, chunkBytesLength);
             groupBytesPosition += chunkBytesLength;
         }
+        LOG.log(Level.FINER, () -> "End stitching all chunks in group: " + group);
         return groupBytes;
     }
 
