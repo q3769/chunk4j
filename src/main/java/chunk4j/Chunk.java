@@ -18,7 +18,7 @@
  * THE SOFTWARE.
  */
 
-package qt.chunk4j;
+package chunk4j;
 
 import java.io.Serializable;
 import java.util.UUID;
