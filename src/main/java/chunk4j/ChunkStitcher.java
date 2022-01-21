@@ -26,6 +26,8 @@ import com.github.benmanes.caffeine.cache.RemovalCause;
 import static com.github.benmanes.caffeine.cache.RemovalCause.EXPIRED;
 import static com.github.benmanes.caffeine.cache.RemovalCause.SIZE;
 import com.github.benmanes.caffeine.cache.RemovalListener;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -77,6 +79,7 @@ public final class ChunkStitcher implements Stitcher {
     }
 
     private final Cache<UUID, Set<Chunk>> chunkGroups;
+    private final Interner interner;
 
     private ChunkStitcher(Builder builder) {
         final long maxStitchTimeMillis = builder.maxStitchTimeMillis == null ? DEFAULT_MAX_STITCH_TIME_MILLIS
@@ -87,13 +90,14 @@ public final class ChunkStitcher implements Stitcher {
                 .maximumSize(maxGroups)
                 .evictionListener(new InvoluntaryEvictionLogger(maxStitchTimeMillis, maxGroups))
                 .build();
+        this.interner = Interners.newWeakInterner();
     }
 
     @Override
     public Optional<byte[]> stitch(Chunk chunk) {
         LOG.log(Level.FINER, () -> "Received chunk: " + chunk);
         final UUID groupId = chunk.getGroupId();
-        synchronized (groupId) {
+        synchronized (this.interner.intern(groupId)) {
             final Set<Chunk> chunks = chunkGroups.get(groupId, key -> new HashSet<>());
             if (!chunks.add(chunk)) {
                 LOG.log(Level.WARNING, "Ignoring duplicate chunk: {0}", chunk);
