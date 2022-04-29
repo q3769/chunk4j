@@ -37,7 +37,7 @@ implementation 'io.github.q3769:chunk4j:20220116.0.1'
 
 A larger blob of data can be chopped up into smaller "chunks" to form a "group". When needed, often on a different network node, the group of chunks can be collectively stitched back together to restore the original data. A group has to gather all the originally chopped chunks in order to be stitched and restored back to the original data blob.
 
-As the API user, though, you don't need to be concerned about the intricacies of the `Chunk`; it suffices to know that `Chunk` is a `Serializable` POJO with an upper byte size capacity. Working with `Chopper` and `Stitcher`, you only need to focus on your own original data bytes.
+As the API user, though, you don't need to be concerned about the intricacies of the `Chunk`; it suffices to know that `Chunk` is a `Serializable` POJO with an upper byte size capacity. Instead, by working with `Chopper` and `Stitcher`, you can remain focused on your own original data, and leave the rest to the chunk4j API.
 
 ```
 public class Chunk implements Serializable {
