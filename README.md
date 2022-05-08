@@ -2,15 +2,21 @@
 
 # chunk4j
 
-A Java API to chop up larger data blobs into smaller "chunks" of a pre-defined size, and stitch the chunks back together to restore the original data when needed.
+A Java API to chop up larger data blobs into smaller "chunks" of a pre-defined size, and stitch the chunks back together
+to restore the original data when needed.
 
 ## User story
 
-As a user of the chunk4j API, I want to chop data blobs (bytes) into smaller pieces of a pre-defined size and, when needed, restore the original data by stitching the pieces back together.
+As a user of the chunk4j API, I want to chop data blobs (bytes) into smaller pieces of a pre-defined size and, when
+needed, restore the original data by stitching the pieces back together.
 
-Note that the separate processes of "chop" and "stitch" often happen on different network compute nodes, and the chunks are transported between the nodes in a possibly random order. While being a generic Java API, chunk4j comes in handy when you have to send, over the network, messages whose sizes may be exceeding what is allowed by the messaging transport.
+Note that the separate processes of "chop" and "stitch" often happen on different network compute nodes, and the chunks
+are transported between the nodes in a possibly random order. While being a generic Java API, chunk4j comes in handy
+when you have to send, over the network, messages whose sizes may be exceeding what is allowed by the messaging
+transport.
 
 ## Prerequisite
+
 Java 8 or better
 
 ## Get it...
@@ -21,23 +27,27 @@ In Maven
 <dependency>
     <groupId>io.github.q3769</groupId>
     <artifactId>chunk4j</artifactId>
-    <version>20220116.0.1</version>
+    <version>20220116.0.2</version>
 </dependency>
 ```
 
 In Gradle
 
 ```
-implementation 'io.github.q3769:chunk4j:20220116.0.1'
+implementation 'io.github.q3769:chunk4j:20220116.0.2'
 ```
 
 ## Use it...
 
 ### The Chunk
 
-A larger blob of data can be chopped up into smaller "chunks" to form a "group". When needed, often on a different network node, the group of chunks can be collectively stitched back together to restore the original data. A group has to gather all the originally chopped chunks in order to be stitched and restored back to the original data blob.
+A larger blob of data can be chopped up into smaller "chunks" to form a "group". When needed, often on a different
+network node, the group of chunks can be collectively stitched back together to restore the original data. A group has
+to gather all the originally chopped chunks in order to be stitched and restored back to the original data blob.
 
-As the API user, though, you don't need to be concerned about the intricacies of the `Chunk`; it suffices to know that `Chunk` is a `Serializable` POJO with an upper byte size capacity. Instead, by working with `Chopper` and `Stitcher`, you can remain focused on your own original data, and leave the rest to the chunk4j API.
+As the API user, though, you don't need to be concerned about the intricacies of the `Chunk`; it suffices to know
+that `Chunk` is a `Serializable` POJO with an upper byte size capacity. Instead, by working with `Chopper`
+and `Stitcher`, you can remain focused on your own original data, and leave the rest to the chunk4j API.
 
 ```
 public class Chunk implements Serializable {
@@ -78,14 +88,15 @@ public class Chunk implements Serializable {
 
 ### The Chopper
 
-
 ```
 public interface Chopper {
     List<Chunk> chop(byte[] bytes);
 }
 ```
 
-On the chopper side, a data blob (bytes) is chopped into a group of chunks. You only have to say how big you want the chunks chopped up to be. Internally, the chopper will divide up the original data bytes based on the chunk size you specified, and assign a unique group ID to all the chunks in the same group representing the original data unit.
+On the chopper side, a data blob (bytes) is chopped into a group of chunks. You only have to say how big you want the
+chunks chopped up to be. Internally, the chopper will divide up the original data bytes based on the chunk size you
+specified, and assign a unique group ID to all the chunks in the same group representing the original data unit.
 
 ```
 public class MessageProducer {
@@ -122,7 +133,11 @@ public interface Stitcher {
 
 ```
 
-On the stitcher side, the `stitch` method is called repeatedly on all chunks. On each call, if a meaningful group of chunks can form to restore a complete original data blob (bytes), such bytes are returned inside an `Optional`; otherwise if the group is still "incomplete" even with this current chunk added, the `stitch` method returns an empty `Optional`. i.e. You keep calling the `stitch` method with each and every chunk you receive; you'll know you get a fully restored original data unit when the method returns a non-empty `Optional` that contains the restored bytes.  
+On the stitcher side, the `stitch` method is called repeatedly on all chunks. On each call, if a meaningful group of
+chunks can form to restore a complete original data blob (bytes), such bytes are returned inside an `Optional`;
+otherwise if the group is still "incomplete" even with this current chunk added, the `stitch` method returns an
+empty `Optional`. i.e. You keep calling the `stitch` method with each and every chunk you receive; you'll know you get a
+fully restored original data unit when the method returns a non-empty `Optional` that contains the restored bytes.
 
 ```
 public class MessageConsumer {
@@ -150,15 +165,22 @@ public class MessageConsumer {
 }
 ```
 
-The stitcher caches all "pending" chunks it has received via the `stitch` method in different groups, each group representing one original data unit. When an incoming chunk renders its own corresponding group "complete" - i.e. the group has gathered all the chunks needed to restore the whole group of chunks back to the original data unit - then such group of chunks are stitched back together for original data restoration. As soon as the original data unit is restored and returned by the `stitch` method, all chunks in the restored group are evicted from the cache.
+The stitcher caches all "pending" chunks it has received via the `stitch` method in different groups, each group
+representing one original data unit. When an incoming chunk renders its own corresponding group "complete" - i.e. the
+group has gathered all the chunks needed to restore the whole group of chunks back to the original data unit - then such
+group of chunks are stitched back together for original data restoration. As soon as the original data unit is restored
+and returned by the `stitch` method, all chunks in the restored group are evicted from the cache.
 
-By default, a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded no matter how much time has passed without being able to restore the group back to the original data unit:
+By default, a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded
+no matter how much time has passed without being able to restore the group back to the original data unit:
 
 ```
 new ChunkStitcher.Builder().build()
 ```
 
-Both aspects of the default, though, can be customized. The following stitcher will discard a group of chunks if 2 seconds have passed since the stitcher was asked to stitch the very first chunk of the group, but hasn't received all the chunks needed to retore the whole group back to the original data unit:
+Both aspects of the default, though, can be customized. The following stitcher will discard a group of chunks if 2
+seconds have passed since the stitcher was asked to stitch the very first chunk of the group, but hasn't received all
+the chunks needed to retore the whole group back to the original data unit:
 
 ```
 new ChunkStitcher.Builder().maxStitchTimeMillis(2000).build()
@@ -182,13 +204,23 @@ These are independent of the chunk4j API itself but...
 
 #### Chunk size/capacity
 
-Chunk4j works completely on the application level of the network (Layer 7). In messaging, usually you'd transport one single chunk per each message. In case you have a hard limit of message size on the transport level, you want to make sure to set the chunk's byte capacity such that the size stays within the transport limit after the entire chunk/message is serialized. Know that there is a (small) fixed size overhead between the value of `Chunk.getByteCapacity()` and the final size of the serialized chunk.
+Chunk4J works completely on the application level of the network (Layer 7). In messaging, usually you'd transport one
+single chunk per each message. In case you have a hard limit of message size on the transport level, you want to make
+sure to set the chunk's byte capacity such that the size stays within the transport limit after the entire chunk/message
+is serialized. Know that there is a (small) fixed size overhead between the value of `Chunk.getByteCapacity()` and the
+final size of the serialized chunk.
 
-#### Message acknowlegment/commit
+#### Message acknowledgment/commit
 
-When working with a messaging provider, you want to acknowlege/commit all the messages of an entire group of chunks in an all-or-nothing fashion, e.g. by using the individual and explicit commit mechanism. The all-or-nothing group commits help ensure, in the case of producer/consumer node crash, no original data units get lost after node recovery. 
+When working with a messaging provider, you want to acknowledge/commit all the messages of an entire group of chunks in
+an all-or-nothing fashion, e.g. by using the individual and explicit commit mechanism. The all-or-nothing group commits
+help ensure, in the case of producer/consumer node crash, no original data units get lost after node recovery.
 
-If, however, the particular messaging provider lacks such mechanism that enables the all-or-nothing commit, then in case of node crash, it is possible that the original data unit whose group of chunks gets "cut off in the middle" at the time of crash will be lost in transportation. All the chunks of a group form a "session" that represents the original data unit. Loss of such sessions is similar to the case where active web sessions get lost when a stateful web application node hosting those sessions fails. To assess the potential "damage", you may need to ask in your system:
+If, however, the particular messaging provider lacks such mechanism that enables the all-or-nothing commit, then in case
+of node crash, it is possible that the original data unit whose group of chunks gets "cut off in the middle" at the time
+of crash will be lost in transportation. All the chunks of a group form a "session" that represents the original data
+unit. Loss of such sessions is similar to the case where active web sessions get lost when a stateful web application
+node hosting those sessions fails. To assess the potential "damage", you may need to ask in your system:
 
 - At run-time, how often does an original data unit truly need more than one chunk to hold?
 - How often does a node crash or go in and out of the system?
