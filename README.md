@@ -2,12 +2,12 @@
 
 # chunk4j
 
-A Java API to chop up larger data blobs into smaller "chunks" of a pre-defined size, and stitch the chunks back together
+A Java API to chop up a larger data blob into smaller "chunks" of a pre-defined size, and stitch the chunks back together
 to restore the original data when needed.
 
 ## User story
 
-As a user of the chunk4j API, I want to chop data blobs (bytes) into smaller pieces of a pre-defined size and, when
+As a user of the chunk4j API, I want to chop a data blob (bytes) into smaller pieces of a pre-defined size and, when
 needed, restore the original data by stitching the pieces back together.
 
 Note that the separate processes of "chop" and "stitch" often happen on different network compute nodes, and the chunks
