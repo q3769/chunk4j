@@ -210,7 +210,7 @@ such that most messages can be sent in one single chunk without having to break 
 is needed. Even with chunk4j, it is still benefitial to avoid and reduce complexity if possbile. 
 
 In case you do need to go beyond the transport message size limit, though, you'd want to make sure to set the chunk's
-byte capacity such that the size stays within the transport limit for the **entire** chunk/message - Know that there 
+byte capacity such that the size stays under the transport limit for the **entire** chunk/message - know that there 
 is a (small) fixed-size overhead between the value of `Chunk.getByteCapacity()` and the overall size of the entire 
 chunk/message.
 
