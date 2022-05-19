@@ -204,15 +204,14 @@ These are independent of the chunk4j API itself but...
 
 #### Chunk size/capacity
 
-Chunk4J works completely on the application level of the network (Layer 7). In most cases, if at all possible, you'd
-still want to try and keep all messages' size under the messaging transport limit. I.e. design your message size 
-such that most messages can be sent in one single chunk without having to break it into multiple chunks and no stitch
-is needed. Even with chunk4j, it is still benefitial to avoid and reduce complexity if possbile. 
+In most cases, if at all possible, you'd still want to try and keep all messages' size under the messaging transport
+limit. I.e. design your message size such that most messages can be sent in one single chunk, so there is no need for 
+further chop-n-stitch. Even with chunk4j, it is still benefitial to avoid and reduce unneccessary complexity. 
 
 In case you do need to go beyond the transport message size limit, though, you'd want to make sure to set the chunk's
-byte capacity such that the size stays under the transport limit for the **entire** chunk/message - know that there 
-is a (small) fixed-size overhead between the value of `Chunk.getByteCapacity()` and the overall size of the entire 
-chunk/message.
+byte capacity such that the size stays under the transport limit for the **entire** chunk/message - know that chunk4j
+works on the application layer of the network (Layer 7); and there is a (small) fixed-size overhead between the value
+of `Chunk.getByteCapacity()` and the overall size of the entire chunk/message.
 
 #### Message acknowledgment/commit
 
