@@ -206,7 +206,7 @@ These are independent of the chunk4j API itself but...
 
 Even with chunk4j, you may want to try and keep the message size under the messaging transport limit. I.e. design
 your message size such that most messages can be sent in one single chunk, so there is no need for chop-n-stitch in 
-the first place: "One ounce of prevention is worth a pound of cure". 
+the first place - "One ounce of prevention" may still be "worth a pound of cure". 
 
 In case you do need to go beyond the transport message size limit, though, you'd want to make sure to set the chunk's
 byte capacity such that the size stays under the transport limit for the **entire** chunk/message - know that chunk4j
