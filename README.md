@@ -46,7 +46,7 @@ network node, the group of chunks can be collectively stitched back together to 
 to gather all the originally chopped chunks in order to be stitched and restored back to the original data blob.
 
 As the API user, though, you don't need to be concerned about the intricacies of the `Chunk`; it suffices to know
-that `Chunk` is a `Serializable` POJO with an upper byte size capacity. Instead, by working with `Chopper`
+that `Chunk` is a `Serializable` POJO with an upper byte size capacity. Mainly by working with `Chopper`
 and `Stitcher`, you can remain focused on your own original data, and leave the rest to the chunk4j API.
 
 ```
@@ -94,8 +94,8 @@ public interface Chopper {
 }
 ```
 
-On the chopper side, a data blob (bytes) is chopped into a group of chunks. You only have to say how big you want the
-chunks chopped up to be. Internally, the chopper will divide up the original data bytes based on the chunk size you
+On the chopper side, chunk4j chops a data blob (bytes) into a group of chunks. You only have to say how big you want the
+chunks chopped up to be. Internally, the `chopper` will divide up the original data bytes based on the chunk size you
 specified, and assign a unique group ID to all the chunks in the same group representing the original data unit.
 
 ```
@@ -133,8 +133,8 @@ public interface Stitcher {
 
 ```
 
-On the stitcher side, the `stitch` method is called repeatedly on all chunks. On each call, if a meaningful group of
-chunks can form to restore a complete original data blob (bytes), such bytes are returned inside an `Optional`;
+On the stitcher side, the `stitch` method should be called repeatedly on all chunks. On each call, if a meaningful group
+of chunks can form to restore a complete original data blob (bytes), such bytes are returned inside an `Optional`;
 otherwise if the group is still "incomplete" even with this current chunk added, the `stitch` method returns an
 empty `Optional`. i.e. You keep calling the `stitch` method with each and every chunk you receive; you'll know you get a
 fully restored original data unit when the method returns a non-empty `Optional` that contains the restored bytes.
@@ -149,8 +149,8 @@ public class MessageConsumer {
     /**
      * Suppose the run-time invocation of this method is managed by messaging provider/transport
      */
-    public void onReceiving(Chunk chunk) {
-        final Optional<byte[]> stitchedBytes = this.stitcher.stitch(chunk);
+    public void onReceiving(Message message) {
+        final Optional<byte[]> stitchedBytes = this.stitcher.stitch(message.getChunkFromPayload());
         stitchedBytes.ifPresent(originalDataBytes -> this.consumeBusinessData(new String(originalDataBytes));
     }
     
