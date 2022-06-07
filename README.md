@@ -111,9 +111,13 @@ public class MessageProducer {
      */
     public void sendBusinessData(String dataText) {
         List<Chunk> chunks = this.chopper.chop(dataText.getBytes());
-        this.transport.sendAll(chunks);
+        this.transport.sendAll(toMessages(chunks));
     }
 
+    private List<Message> toMessages(List<Chunk> chunks) {
+        // each message carries a single chunk of data
+        ...
+    }
     ...
 }
 
