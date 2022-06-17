@@ -214,8 +214,8 @@ the first place - "One ounce of prevention" may still be "worth a pound of cure"
 
 In case you do need to go beyond the transport message size limit, though, you'd want to make sure to set the chunk's
 byte capacity such that the size stays under the transport limit for the **entire** chunk/message - know that chunk4j
-works on the application layer of the network (Layer 7), and there is a (small) fixed-size overhead between the value
-of `Chunk.getByteCapacity()` and the overall size of the entire chunk/message.
+works on the application layer of the network (Layer 7), and there is a fixed-size overhead between the value of 
+`Chunk.getByteCapacity()` and the overall size of the entire chunk/message.
 
 #### Message acknowledgment/commit
 
