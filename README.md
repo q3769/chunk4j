@@ -216,7 +216,7 @@ capacity at run-time.
 
 Note that chunk4j works on the application layer of the network (Layer 7), and there is a fixed-size overhead between
 a `chunk`'s capacity (`Chunk.getByteCapacity()`) and the overall size of the entire chunk/message. Take that into 
-account in design when trying to keep the *entire* message size under the transport limit.
+account when designing to keep the *entire* message size under the transport limit.
 
 #### Message acknowledgment/commit
 
