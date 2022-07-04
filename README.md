@@ -11,10 +11,10 @@ As a user of the chunk4j API, I want to chop a data blob (bytes) into smaller pi
 needed, restore the original data by stitching the pieces back together.
 
 Note: The separate processes of "chop" and "stitch" often need to happen on different network compute nodes, and the 
-chunks are transported between the nodes in a possibly random order. While being a generic Java API, chunk4j comes 
+chunks are transported between the nodes in a possibly random order. As a Java POJO API, chunk4j comes 
 in handy when you have to transport data entries whose sizes may be exceeding what is allowed/configured by the 
 underlying system's protocol. E.g. at the time of writing, the default message size limit is 256KB with [Amazon Simple Queue Service](https://aws.amazon.com/sqs/), 
-and 1MB with [Apache Kafka](https://kafka.apache.org/).
+and 1MB with [Apache Kafka](https://kafka.apache.org/); the default cache entry size limit is 1MB for [Memcached](https://memcached.org/), and 512MB for [Redis](https://redis.io/).
 
 ## Prerequisite
 
@@ -40,15 +40,16 @@ implementation 'io.github.q3769:chunk4j:20220116.0.2'
 
 ## Use it...
 
+As generic Java API, chunk4j can be directly used as a POJO library in any client codebase. For better 
+encapsulation, though, consisder using chunk4j as a "lower level API". I.e. with some simple wrapper mechanism 
+over the chunk4j API, the end client code can be completely agnontic of chunk4j, and work directly with the
+higher-level wrapper interface that only exposes the original client-side bussiness domain data (bytes). 
+
 ### The Chunk
 
 A larger blob of data can be chopped up into smaller "chunks" to form a "group". When needed, often on a different
 network node, the group of chunks can be collectively stitched back together to restore the original data. A group has
 to gather all the originally chopped chunks in order to be stitched and restored back to the original data blob.
-
-As the API user, though, you don't need to be concerned about the intricacies of the `Chunk`; it suffices to know
-that `Chunk` is a `Serializable` POJO with an upper byte size capacity. Mainly by working with `Chopper`
-and `Stitcher`, you can remain focused on your own original data, and leave the rest to the chunk4j API.
 
 ```
 public class Chunk implements Serializable {
@@ -204,8 +205,6 @@ new ChunkStitcher.Builder().maxStitchTimeMillis(2000).maxGroups(100).build()
 ```
 
 ### Hints on using chunk4j API in messaging
-
-These are independent of the chunk4j API itself but...
 
 #### Chunk size/capacity
 
