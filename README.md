@@ -209,14 +209,14 @@ These are independent of the chunk4j API itself but...
 
 #### Chunk size/capacity
 
-Even with chunk4j, you may want to have a design such that, most of the times, the message size is under the 
-default/configured messaging transport limit. I.e. at run-time, most messages can be sent in one single chunk. 
-The chop-n-stitch mechanism would kick in and serve as a safty measure in case the message size does go beyond the 
-limit, rather than as the regular mode of delivery. "One ounce of prevention" may still be "worth a pound of cure". 
+Consider using chunk4j as a safty measure rather than the regular mode of delivery at run-time: "One ounce of 
+prevention" may still be "worth a pound of cure". Design the application such that most messages can be sent in one 
+single chunk, and the chop-n-stitch mechanism only kicks in when the message size does have to go beyond the chunk's
+capacity at run-time. 
 
 Note that chunk4j works on the application layer of the network (Layer 7), and there is a fixed-size overhead between
-the value of `Chunk.getByteCapacity()` and the overall size of the entire chunk/message. Take that into account when
-setting the capacity so that the *entire* message size stays under the transport limit.
+a `chunk`'s capacity (`Chunk.getByteCapacity()`) and the overall size of the entire chunk/message. Take that into 
+account when trying to keep the *entire* message size stays under the transport limit.
 
 #### Message acknowledgment/commit
 
