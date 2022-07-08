@@ -10,11 +10,13 @@ to restore the original data when needed.
 As a user of the chunk4j API, I want to chop a data blob (bytes) into smaller pieces of a pre-defined size and, when
 needed, restore the original data by stitching the pieces back together.
 
-Note: The separate processes of "chop" and "stitch" often need to happen on different network compute nodes, and the 
-chunks are transported between the nodes in a possibly random order. As a Java POJO API, chunk4j comes 
-in handy when you have to transport data entries whose sizes may sometimes exceed what is allowed/configured by the 
-underlying system's protocol. E.g. at the time of writing, the default message size limit is 256KB with [Amazon Simple Queue Service](https://aws.amazon.com/sqs/), 
-and 1MB with [Apache Kafka](https://kafka.apache.org/); the default cache entry size limit is 1MB for [Memcached](https://memcached.org/), and 512MB for [Redis](https://redis.io/).
+Note: The separate processes of "chop" and "stitch" often need to happen on different network compute nodes, and the
+chunks are transported between the nodes in a possibly random order. chunk4j comes in handy when you have to transport
+larger sized data entries that may sometimes exceed what is allowed/configured by the underlying transport protocol.
+E.g. at the time of writing, the default message size limit is 256KB
+with [Amazon Simple Queue Service](https://aws.amazon.com/sqs/), and 1MB with [Apache Kafka](https://kafka.apache.org/);
+the default cache entry size limit is 1MB for [Memcached](https://memcached.org/), and 512MB
+for [Redis](https://redis.io/).
 
 ## Prerequisite
 
@@ -40,16 +42,15 @@ implementation 'io.github.q3769:chunk4j:20220116.0.2'
 
 ## Use it...
 
-As generic Java API, chunk4j can be directly used as a POJO library in any client codebase. For better 
-encapsulation, though, consisder using chunk4j as a "lower level API". I.e. with some simple wrapper mechanism 
-over the chunk4j API, the end client code can be completely agnontic of chunk4j, and work directly with the
-higher-level wrapper interface that only exposes the original client-side bussiness domain data (bytes). 
+As a generic POJO API, chunk4j can be directly used in any Java client codebase. For better encapsulation, though,
+consider using chunk4j as a "lower level API". I.e. with some simple wrapper/adapter mechanism, the end-client codebase
+can be completely agnostic of chunk4j, and work directly with the higher-level wrapper interface that only exposes the
+original client-side business domain data (bytes or domain objects serializable to bytes).
 
 ### The Chunk
 
 A larger blob of data can be chopped up into smaller "chunks" to form a "group". When needed, often on a different
-network node, the group of chunks can be collectively stitched back together to restore the original data. A group has
-to gather all the originally chopped chunks in order to be stitched and restored back to the original data blob.
+network node, the group of chunks can be collectively stitched back together to restore the original data.
 
 ```
 public class Chunk implements Serializable {
@@ -139,11 +140,13 @@ public interface Stitcher {
 
 ```
 
-On the stitcher side, the `stitch` method should be called repeatedly on all chunks. On each call, if a meaningful group
-of chunks can form to restore a complete original data blob (bytes), such bytes are returned inside an `Optional`;
-otherwise if the group is still "incomplete" even with this current chunk added, the `stitch` method returns an
-empty `Optional`. i.e. You keep calling the `stitch` method with each and every chunk you receive; you'll know you get a
-fully restored original data unit when the method returns a non-empty `Optional` that contains the restored bytes.
+On the stitcher side, a group has to gather all the previously chopped chunks before the original data blob represented
+by this group can be stitched together and restored. The `stitch` method should be repeatedly called on all the chunks
+ever received. On each call, if a meaningful group of chunks can form to restore a complete original data blob/bytes,
+such bytes are returned inside an `Optional`; otherwise if the group is still "incomplete" even with the addition of
+this current chunk, then the `stitch` method returns an empty `Optional`. i.e. You keep calling the `stitch` method with
+each and every chunk you receive; you'll know you get a fully restored original data blob when the method returns a
+non-empty `Optional` that contains the restored bytes.
 
 ```
 public class MessageConsumer {
@@ -184,15 +187,16 @@ no matter how much time has passed without being able to restore the group back 
 new ChunkStitcher.Builder().build()
 ```
 
-Both aspects of the default, though, can be customized. The following stitcher will discard a group of chunks if 2
-seconds have passed since the stitcher was asked to stitch the very first chunk of the group, but hasn't received all
-the chunks needed to retore the whole group back to the original data unit:
+Both of those aspects, though, can be customized. The following stitcher will discard a group of chunks if 2 seconds
+have passed since the stitcher was asked to stitch the very first chunk of the group, but hasn't received all the chunks
+needed to restore the whole group back to the original data unit:
 
 ```
 new ChunkStitcher.Builder().maxStitchTimeMillis(2000).build()
 ```
 
-This stitcher will discard some group(s) of chunks when there are more than 100 chunk groups pending restoration:
+This stitcher will discard some group(s) of chunks when there are more than 100 groups of original data pending
+restoration:
 
 ```
 new ChunkStitcher.Builder().maxGroups(100).build()
@@ -208,14 +212,14 @@ new ChunkStitcher.Builder().maxStitchTimeMillis(2000).maxGroups(100).build()
 
 #### Chunk size/capacity
 
-Consider using chunk4j as a safty measure rather than the regular mode of delivery at run-time: "One ounce of 
-prevention" may still be "worth a pound of cure". Design the application such that most messages can be sent in one 
+Consider using chunk4j as a safety measure rather than the regular mode of delivery at run-time: "One ounce of
+prevention" may still be "worth a pound of cure". Design the application such that most messages can be sent in one
 single chunk, and the chop-n-stitch mechanism only kicks in when the message size does have to go beyond the chunk's
-capacity at run-time. 
+capacity at run-time.
 
-Note that chunk4j works on the application layer of the network (Layer 7), and there is a fixed-size overhead between
+*Note: chunk4j works on the application layer of the network (Layer 7), and there is a fixed-size overhead between
 a `chunk`'s capacity (`Chunk.getByteCapacity()`) and the overall size of the entire chunk/message. Take the overhead
-into account when designing to keep the *entire* message size under the transport limit.
+into account when designing to keep the *entire* message size under the transport limit.*
 
 #### Message acknowledgment/commit
 
