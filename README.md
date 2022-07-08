@@ -14,9 +14,9 @@ needed, restore the original data by stitching the pieces back together.
 chunks are transported between the nodes in a possibly random order. chunk4j comes in handy when, occasionally at
 run-time, you have to handle larger sized data entries than what is allowed/configured by the underlying transport
 protocol. E.g. at the time of writing, the default message size limit is 256KB
-with [Amazon Simple Queue Service](https://aws.amazon.com/sqs/), and 1MB with [Apache Kafka](https://kafka.apache.org/);
-the default cache entry size limit is 1MB for [Memcached](https://memcached.org/), and 512MB
-for [Redis](https://redis.io/).*
+with [Amazon Simple Queue Service (SQS)](https://aws.amazon.com/sqs/), and 1MB
+with [Apache Kafka](https://kafka.apache.org/); the default cache entry size limit is 1MB
+for [Memcached](https://memcached.org/), and 512MB for [Redis](https://redis.io/).*
 
 ## Prerequisite
 
