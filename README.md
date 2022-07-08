@@ -142,11 +142,11 @@ public interface Stitcher {
 
 On the stitcher side, a group has to gather all the previously chopped chunks before the original data blob represented
 by this group can be stitched together and restored. The `stitch` method should be repeatedly called on all the chunks
-ever received. On each call, if a meaningful group of chunks can form to restore a complete original data blob/bytes,
-such bytes are returned inside an `Optional`; otherwise if the group is still "incomplete" even with the addition of
-this current chunk, then the `stitch` method returns an empty `Optional`. i.e. You keep calling the `stitch` method with
-each and every chunk you receive; you'll know you get a fully restored original data blob when the method returns a
-non-empty `Optional` that contains the restored bytes.
+ever received. On each call and addition of the received chunk, if a meaningful group can form to restore a complete
+original data blob in bytes, such bytes are returned inside an `Optional`; otherwise if the group is still "incomplete"
+even with the addition of this current chunk, then the `stitch` method returns an empty `Optional`. I.e. You keep
+calling the `stitch` method with each and every chunk you received; you'll know you get a fully restored original data
+blob when the method returns a non-empty `Optional` that contains the restored bytes.
 
 ```
 public class MessageConsumer {
