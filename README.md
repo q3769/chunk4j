@@ -10,13 +10,13 @@ to restore the original data when needed.
 As a user of the chunk4j API, I want to chop a data blob (bytes) into smaller pieces of a pre-defined size and, when
 needed, restore the original data by stitching the pieces back together.
 
-Note: The separate processes of "chop" and "stitch" often need to happen on different network compute nodes, and the
+*Note: The separate processes of "chop" and "stitch" often need to happen on different network compute nodes, and the
 chunks are transported between the nodes in a possibly random order. chunk4j comes in handy when you have to transport
 larger sized data entries that may sometimes exceed what is allowed/configured by the underlying transport protocol.
 E.g. at the time of writing, the default message size limit is 256KB
 with [Amazon Simple Queue Service](https://aws.amazon.com/sqs/), and 1MB with [Apache Kafka](https://kafka.apache.org/);
 the default cache entry size limit is 1MB for [Memcached](https://memcached.org/), and 512MB
-for [Redis](https://redis.io/).
+for [Redis](https://redis.io/).*
 
 ## Prerequisite
 
@@ -142,7 +142,7 @@ public interface Stitcher {
 
 On the stitcher side, a group has to gather all the previously chopped chunks before the original data blob represented
 by this group can be stitched together and restored. The `stitch` method should be repeatedly called on all the chunks
-ever received. On each call and addition of the received chunk, if a meaningful group can form to restore a complete
+ever received. On each call and addition of the received chunk, if a meaningful group can form to restore the complete
 original data blob in bytes, such bytes are returned inside an `Optional`; otherwise if the group is still "incomplete"
 even with the addition of this current chunk, then the `stitch` method returns an empty `Optional`. I.e. You keep
 calling the `stitch` method with each and every chunk you received; you'll know you get a fully restored original data
@@ -187,9 +187,9 @@ no matter how much time has passed without being able to restore the group back 
 new ChunkStitcher.Builder().build()
 ```
 
-Both of those aspects, though, can be customized. The following stitcher will discard a group of chunks if 2 seconds
-have passed since the stitcher was asked to stitch the very first chunk of the group, but hasn't received all the chunks
-needed to restore the whole group back to the original data unit:
+Both of those aspects, though, can be customized. The following stitcher will discard a group of chunks if 2 seconds of
+time have passed since the stitcher was asked to stitch the very first chunk of the group, but hasn't received all the
+chunks needed to restore the whole group back to the original data unit:
 
 ```
 new ChunkStitcher.Builder().maxStitchTimeMillis(2000).build()
