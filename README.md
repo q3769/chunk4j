@@ -171,6 +171,9 @@ by this group can be stitched together and restored.
 public class MessageConsumer {
 
     private Stitcher stitcher = new ChunkStitcher.Builder().build();    
+    
+    @Autowried
+    private OriginalBusinessDomainDataProcessor originalBusinessDomainDataProcessor;
         
         ...
         
@@ -179,15 +182,9 @@ public class MessageConsumer {
      */
     public void onReceiving(Message message) {
         final Optional<byte[]> stitchedBytes = this.stitcher.stitch(message.getChunkFromPayload());
-        stitchedBytes.ifPresent(originalDataBytes -> this.consumeOriginalBusinessDomainData(new String(originalDataBytes));
-    }
-    
-    /**
-     * Consumer method of business data
-     */
-    private void consumeOriginalBusinessDomainData(String dataText) {
-        ...
-    }    
+        stitchedBytes.ifPresent(originalDataBytes -> 
+                this.originalBusinessDomainDataProcessor.process(new String(originalDataBytes));
+    } 
     ...
 }
 ```
