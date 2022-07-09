@@ -49,10 +49,60 @@ consider using chunk4j as a "lower level API". I.e. with some simple wrapper/ada
 can be completely agnostic of chunk4j, and work directly with the higher-level wrapper interface that only exposes the
 original client-side business domain data (bytes or domain objects serializable to bytes).
 
-### The Chunk
+### The Chopper
+
+#### API:
+
+```
+public interface Chopper {
+
+    /**
+     * @param bytes the original data blob to be chopped into chunks
+     * @return the group of chunks which the original data blob is chopped into. Each chunk carries a portion of the
+     *         original bytes; and the size of that portion has a pre-configured maximum size (a.k.a. the
+     *         {@code Chunk}'s capacity). Thus, if the size of the original bytes is smaller or equal to the chunk's
+     *         capacity, then the size of the returned chunk group will be 1.
+     */
+    List<Chunk> chop(byte[] bytes);
+}
+```
 
 A larger blob of data can be chopped up into smaller "chunks" to form a "group". When needed, often on a different
 network node, the group of chunks can be collectively stitched back together to restore the original data.
+
+#### Usage example:
+
+```
+public class MessageProducer {
+
+    priviate Chopper chopper = ChunkChopper.ofChunkByteSize(1024); // each chopped off chunk holds up to 1024 bytes
+    prviate MessagingTransport transport = ...;
+    
+    ...
+
+    /**
+     * Sender method of business data
+     */
+    public void sendBusinessData(String dataText) {
+        List<Chunk> chunks = this.chopper.chop(dataText.getBytes());
+        this.transport.sendAll(toMessages(chunks));
+    }
+
+    private List<Message> toMessages(List<Chunk> chunks) {
+        // each message carries a single chunk of data
+        ...
+    }
+    ...
+}
+```
+
+On the `Chopper` side, you only have to say how big you want the chunks chopped up to be. The chopper will internally
+divide up the original data bytes based on the chunk size you specified, and assign a unique group ID to all the chunks
+in the same group representing the original data unit.
+
+### The Chunk
+
+#### API:
 
 ```
 public class Chunk implements Serializable {
@@ -91,44 +141,15 @@ public class Chunk implements Serializable {
 }
 ```
 
-### The Chopper
+#### Usage example:
 
-```
-public interface Chopper {
-    List<Chunk> chop(byte[] bytes);
-}
-```
-
-On the chopper side, chunk4j chops a data blob (bytes) into a group of chunks. You only have to say how big you want the
-chunks chopped up to be. Internally, the `chopper` will divide up the original data bytes based on the chunk size you
-specified, and assign a unique group ID to all the chunks in the same group representing the original data unit.
-
-```
-public class MessageProducer {
-
-    priviate Chopper chopper = ChunkChopper.ofChunkByteSize(1024); // each chopped off chunk holds up to 1024 bytes
-    prviate MessagingTransport transport = ...;
-    
-    ...
-
-    /**
-     * Sender method of business data
-     */
-    public void sendBusinessData(String dataText) {
-        List<Chunk> chunks = this.chopper.chop(dataText.getBytes());
-        this.transport.sendAll(toMessages(chunks));
-    }
-
-    private List<Message> toMessages(List<Chunk> chunks) {
-        // each message carries a single chunk of data
-        ...
-    }
-    ...
-}
-
-```
+Most times, you don't need to interact directly with the `Chunk`'s individual methods, as the details are handled behind
+the scenes of the `Chopper` and `Stitcher` API. It suffices to know `Chunk` is a simple serializable POJO data holder
+that carries the data bytes between the `Chopper` and the `Stitcher`.
 
 ### The Stitcher
+
+#### API:
 
 ```
 public interface Stitcher {
@@ -139,48 +160,48 @@ public interface Stitcher {
      */
     Optional<byte[]> stitch(Chunk chunk);
 }
-
 ```
 
 On the stitcher side, a group has to gather all the previously chopped chunks before the original data blob represented
 by this group can be stitched together and restored. The `stitch` method should be repeatedly called on all the chunks
-ever received. On each call and addition of the received chunk, if a meaningful group can form to restore the complete
-original data blob in bytes, such bytes are returned inside an `Optional`; otherwise if the group is still "incomplete"
-even with the addition of this current chunk, then the `stitch` method returns an empty `Optional`. I.e. You keep
-calling the `stitch` method with each and every chunk you received; you'll know you get a fully restored original data
-blob when the method returns a non-empty `Optional` that contains the restored bytes.
+ever received. On each call and addition of the received chunk, if a meaningful group can form to complete and restore
+the original data blob in bytes, such bytes are returned inside an `Optional`; otherwise if the group is still "
+incomplete" even with the addition of this current chunk, then the `stitch` method returns an empty `Optional`. I.e. You
+keep calling the `stitch` method with each and every chunk you received; you'll know you get a fully restored original
+data blob when the method returns a non-empty `Optional` that contains the restored data bytes.
+
+#### Usage example:
 
 ```
 public class MessageConsumer {
 
-    private Stitcher stitcher = new ChunkStitcher.Builder().build();
-    
-    ...
-
+    private Stitcher stitcher = new ChunkStitcher.Builder().build();    
+        
+        ...
+        
     /**
      * Suppose the run-time invocation of this method is managed by messaging provider/transport
      */
     public void onReceiving(Message message) {
         final Optional<byte[]> stitchedBytes = this.stitcher.stitch(message.getChunkFromPayload());
-        stitchedBytes.ifPresent(originalDataBytes -> this.consumeBusinessData(new String(originalDataBytes));
+        stitchedBytes.ifPresent(originalDataBytes -> this.consumeOriginalBusinessDomainData(new String(originalDataBytes));
     }
     
     /**
      * Consumer method of business data
      */
-    private void consumeBusinessData(String dataText) {
+    private void consumeOriginalBusinessDomainData(String dataText) {
         ...
-    }
-    
+    }    
     ...
 }
 ```
 
-The stitcher caches all "pending" chunks it has received via the `stitch` method in different groups, each group
-representing one original data unit. When an incoming chunk renders its own corresponding group "complete" - i.e. the
-group has gathered all the chunks needed to restore the whole group of chunks back to the original data unit - then such
-group of chunks are stitched back together for original data restoration. As soon as the original data unit is restored
-and returned by the `stitch` method, all chunks in the restored group are evicted from the cache.
+Note that the stitcher caches all "pending" chunks it has received via the `stitch` method in different groups, each
+group representing one original data unit. When an incoming chunk renders its own corresponding group "complete" - i.e.
+the group has gathered all the chunks needed to restore the whole group of chunks back to the original data unit - then
+such group of chunks are stitched back together for original data restoration. As soon as the original data unit is
+restored and returned by the `stitch` method, all chunks in the restored group are evicted from the cache.
 
 By default, a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded
 no matter how much time has passed without being able to restore the group back to the original data unit:
