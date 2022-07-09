@@ -85,11 +85,12 @@ public class MessageProducer {
      */
     public void sendBusinessData(String dataText) {
         List<Chunk> chunks = this.chopper.chop(dataText.getBytes());
-        this.transport.sendAll(packChunkGroupToTransportMessages(chunks));
+        this.transport.sendAll(toMessages(chunks));
     }
 
-    private List<Message> packChunkGroupToTransportMessages(List<Chunk> chunks) {
-        // pack group of chunks 1:1 into transport messages, each message carries a single chunk of data
+    private List<Message> toMessages(List<Chunk> chunks) {
+        // pack the input group of chunks 1:1 into transport messages, 
+        // each message carries a single chunk of data.
         ...
     }
     ...
