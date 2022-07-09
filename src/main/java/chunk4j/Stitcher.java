@@ -28,10 +28,11 @@ import java.util.Optional;
 public interface Stitcher {
 
     /**
-     * @param chunk to be put back into its corresponding group. If this chunk renders its group "complete", where all
-     *              chunks of the original data blob are gathered, then the original data will be stitched and returned.
-     *              Otherwise, if the chunk group still hasn't gathered all the chunks needed, even with the addition of
-     *              this chunk, then the chunk group will be kept around, waiting for all the chunks to be gathered.
+     * @param chunk to be put back into its corresponding group. If this chunk renders its group "complete", i.e. all
+     *              the chunks of the original data blob are gathered, then the original data will be stitched together
+     *              and returned. Otherwise, if the chunk group still hasn't gathered all the chunks needed, even with
+     *              the addition of this chunk, then the whole group will be kept around, waiting for the missing
+     *              chunk(s) to arrive.
      * @return Optional non-empty and contains the original data blob restored by stitching if the input chunk is the
      *         last missing piece of the entire chunk group representing the original data; empty otherwise.
      */
