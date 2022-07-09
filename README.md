@@ -143,9 +143,9 @@ public class Chunk implements Serializable {
 
 #### Usage example:
 
-Most times, you don't need to interact directly with the `Chunk`'s individual methods, as the details are handled behind
-the scenes of the `Chopper` and `Stitcher` API. It suffices to know `Chunk` is a simple serializable POJO data holder
-that carries the data bytes between the `Chopper` and the `Stitcher`.
+Most times, you don't need to interact directly with the `Chunk`'s API methods, as the details are handled behind the
+scenes of the `Chopper` and `Stitcher` API. It suffices to know `Chunk` is a simple serializable POJO data holder that
+carries the data bytes between the `Chopper` and the `Stitcher`.
 
 ### The Stitcher
 
@@ -163,12 +163,7 @@ public interface Stitcher {
 ```
 
 On the stitcher side, a group has to gather all the previously chopped chunks before the original data blob represented
-by this group can be stitched together and restored. The `stitch` method should be repeatedly called on all the chunks
-ever received. On each call and addition of the received chunk, if a meaningful group can form to complete and restore
-the original data blob in bytes, such bytes are returned inside an `Optional`; otherwise if the group is still "
-incomplete" even with the addition of this current chunk, then the `stitch` method returns an empty `Optional`. I.e. You
-keep calling the `stitch` method with each and every chunk you received; you'll know you get a fully restored original
-data blob when the method returns a non-empty `Optional` that contains the restored data bytes.
+by this group can be stitched together and restored.
 
 #### Usage example:
 
@@ -196,6 +191,13 @@ public class MessageConsumer {
     ...
 }
 ```
+
+The `stitch` method should be repeatedly called on all the chunks ever received. On each call and addition of the
+received chunk, if a meaningful group can form to complete and restore the original data blob in bytes, such bytes are
+returned inside an `Optional`; otherwise if the group is still " incomplete" even with the addition of this current
+chunk, then the `stitch` method returns an empty `Optional`. I.e. You keep calling the `stitch` method with each and
+every chunk you received; you'll know you get a fully restored original data blob when the method returns a
+non-empty `Optional` that contains the restored data bytes.
 
 Note that the stitcher caches all "pending" chunks it has received via the `stitch` method in different groups, each
 group representing one original data unit. When an incoming chunk renders its own corresponding group "complete" - i.e.
