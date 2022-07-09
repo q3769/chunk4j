@@ -10,12 +10,10 @@ to restore the original data when needed.
 As a user of the chunk4j API, I want to chop a data blob (bytes) into smaller pieces of a pre-defined size and, when
 needed, restore the original data by stitching the pieces back together.
 
-Note:
-
-The separate processes of "chop" and "stitch" often need to happen on different network compute nodes, and the chunks
-are transported between the nodes in a possibly random order. chunk4j comes in handy when, occasionally at run-time, you
-have to handle larger sized data entries than what is allowed/configured by the underlying transport protocol. E.g. at
-the time of writing, the default message size limit is 256KB
+Note that the separate processes of "chop" and "stitch" often need to happen on different network compute nodes, and the
+chunks are transported between the nodes in a possibly random order. chunk4j comes in handy when, occasionally at
+run-time, you have to handle larger sized data entries than what is allowed/configured by the underlying transport
+protocol. E.g. at the time of writing, the default message size limit is 256KB
 with [Amazon Simple Queue Service (SQS)](https://aws.amazon.com/sqs/), and 1MB
 with [Apache Kafka](https://kafka.apache.org/); the default cache entry size limit is 1MB
 for [Memcached](https://memcached.org/), and 512MB for [Redis](https://redis.io/).
