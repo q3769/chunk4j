@@ -34,9 +34,9 @@ public interface Chopper {
     /**
      * @param bytes the original data blob to be chopped into chunks
      * @return the group of chunks which the original data blob is chopped into. Each chunk carries a portion of the
-     *         original bytes; and the size of that portion has a pre-configured maximum size (a.k.a. the
-     *         {@code Chunk}'s capacity). Thus, if the size of the original bytes is smaller or equal to the chunk's
-     *         capacity, then returned chunk group will have only one chunk element.
+     *         original bytes; and the size of that portion has a pre-configured maximum (a.k.a. the {@code Chunk}'s
+     *         capacity). Thus, if the size of the original bytes is smaller or equal to the chunk's capacity, then the
+     *         returned chunk group will have only one chunk element.
      */
     List<Chunk> chop(byte[] bytes);
 }
