@@ -51,13 +51,13 @@ public final class ChunkChopper implements Chopper {
     @Override public List<Chunk> chop(byte[] bytes) {
         final UUID groupId = UUID.randomUUID();
         final int groupSize = numberOfChunks(bytes);
-        final List<Chunk> chunks = new ArrayList<>();
+        final List<Chunk> group = new ArrayList<>();
         int start = 0;
         int chunkIndex = 0;
         while (start < bytes.length) {
             int end = Math.min(bytes.length, start + this.chunkCapacity);
             final byte[] chunkBytes = Arrays.copyOfRange(bytes, start, end);
-            chunks.add(Chunk.builder()
+            group.add(Chunk.builder()
                     .byteCapacity(chunkCapacity)
                     .groupId(groupId)
                     .groupSize(groupSize)
@@ -66,8 +66,8 @@ public final class ChunkChopper implements Chopper {
                     .build());
             start += this.chunkCapacity;
         }
-        assert groupSize == chunks.size();
-        return chunks;
+        assert groupSize == group.size();
+        return group;
     }
 
     private int numberOfChunks(byte[] bytes) {
