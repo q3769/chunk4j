@@ -10,13 +10,15 @@ to restore the original data when needed.
 As a user of the chunk4j API, I want to chop a data blob (bytes) into smaller pieces of a pre-defined size and, when
 needed, restore the original data by stitching the pieces back together.
 
-Note that the separate processes of "chop" and "stitch" often need to happen on different network compute nodes, and the
-chunks are transported between the nodes in a possibly random order. chunk4j comes in handy when, occasionally at
-run-time, you have to handle larger sized data entries than what is allowed/configured by the underlying transport
-protocol. E.g. at the time of writing, the default message size limit is 256KB
-with [Amazon Simple Queue Service (SQS)](https://aws.amazon.com/sqs/), and 1MB
-with [Apache Kafka](https://kafka.apache.org/); the default cache entry size limit is 1MB
-for [Memcached](https://memcached.org/), and 512MB for [Redis](https://redis.io/).
+Notes:
+
+- The separate processes of "chop" and "stitch" often need to happen on different network compute nodes; and the
+  chunks are transported between the nodes in a possibly random order.
+- The chunk4j API comes in handy when, occasionally at run-time, you have to handle larger sized data entries than what
+  is allowed/configured by the underlying transport protocol. E.g. at the time of writing, the default message size
+  limit is 256KB with [Amazon Simple Queue Service (SQS)](https://aws.amazon.com/sqs/), and 1MB
+  with [Apache Kafka](https://kafka.apache.org/); the default cache entry size limit is 1MB
+  for [Memcached](https://memcached.org/), and 512MB for [Redis](https://redis.io/).
 
 ## Prerequisite
 
@@ -142,9 +144,9 @@ public class Chunk implements Serializable {
 
 #### Usage example:
 
-Most often, you don't need to interact directly with the `Chunk`'s API methods; the details are already handled behind
-the scenes of the `Chopper` and `Stitcher` API. It suffices to know `Chunk` is a simple serializable POJO data holder
-that carries the data bytes travelling from the `Chopper` to the `Stitcher`.
+Normally, you don't need to interact with the `Chunk`'s API methods; the details are already handled behind the scenes
+of the `Chopper` and `Stitcher` API. It suffices to know that `Chunk` is a simple POJO data holder; serializable, it
+carries the data bytes travelling from the `Chopper` to the `Stitcher`.
 
 ### The Stitcher
 
@@ -238,14 +240,15 @@ new ChunkStitcher.Builder().maxStitchTimeMillis(2000).maxGroups(100).build()
 
 #### Chunk size/capacity
 
-Consider using chunk4j as a safety measure rather than the regular mode of delivery at run-time: "One ounce of
-prevention" may still be "worth a pound of cure". Design the application such that most messages can be sent in one
-single chunk, and the chop-n-stitch mechanism only kicks in when the message size does have to go beyond the chunk's
-capacity at run-time.
+When it comes to decide the chunk's capacity, it may be beneficial to use the chop-n-stitch mechanism as a safety
+measure rather than the regular mode of delivery at run-time: "One ounce of prevention" may still be "worth a pound of
+cure". Design the application such that most messages can be fit and sent in one single chunk, and the chop-n-stitch
+mechanism only needs to kick in when, occasionally, the message size does go beyond the chunk's capacity.
 
-*Note: chunk4j works on the application layer of the network (Layer 7), and there is a fixed-size overhead between
-a `chunk`'s capacity (`Chunk.getByteCapacity()`) and the overall size of the entire chunk/message. Take the overhead
-into account when designing to keep the *entire* message size under the transport limit.*
+*Note: chunk4j works on the application layer of the network (Layer 7), and there is a fixed-size overhead between a
+chunk's byte size capacity (`Chunk.getByteCapacity()`) and the overall size of the entire chunk that is transported by a
+message. Take that and all other overheads into account when designing to keep the *entire* message size under the
+transport limit.*
 
 #### Message acknowledgment/commit
 
