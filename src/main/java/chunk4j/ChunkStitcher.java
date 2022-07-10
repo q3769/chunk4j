@@ -66,8 +66,9 @@ public final class ChunkStitcher implements Stitcher {
         orderedGroup.sort(Comparator.comparingInt(Chunk::getIndex));
         int groupBytesPosition = 0;
         for (Chunk chunk : orderedGroup) {
-            final int chunkBytesLength = chunk.getBytes().length;
-            System.arraycopy(chunk.getBytes(), 0, groupBytes, groupBytesPosition, chunkBytesLength);
+            byte[] chunkBytes = chunk.getBytes();
+            final int chunkBytesLength = chunkBytes.length;
+            System.arraycopy(chunkBytes, 0, groupBytes, groupBytesPosition, chunkBytesLength);
             groupBytesPosition += chunkBytesLength;
         }
         LOG.log(Level.FINEST, () -> "End stitching all chunks in " + group);
