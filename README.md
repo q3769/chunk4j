@@ -240,13 +240,15 @@ new ChunkStitcher.Builder().maxStitchTimeMillis(2000).maxGroups(100).build()
 
 #### Chunk size/capacity
 
-When it comes to decide the chunk's capacity, it may be beneficial to use the chop-n-stitch mechanism as a safety
-measure rather than the regular mode of delivery at run-time: "One ounce of prevention" may still be "worth a pound of
-cure". Design the application such that most messages can be fit and sent in one single chunk, and the chop-n-stitch
-mechanism only needs to kick in when, occasionally, the message size does go beyond the chunk's capacity.
+When deciding the chunk's capacity, it may be beneficial to use the chop-n-stitch mechanism as a safety measure rather
+than the regular mode of delivery at run-time: "One ounce of prevention" may still be "worth a pound of cure". On the
+one hand, the chunk's capacity will need to be under the transport message size limit. On the other hand, try setting up
+the application and chunk capacity such that most domain data can be fit and transported in one single chunk/message,
+and the chop-n-stitch mechanism only needs to kick in when, occasionally, the domain data entry does go beyond the
+chunk's capacity.
 
-*Note: chunk4j works on the application layer of the network (Layer 7), and there is a fixed-size overhead between a
-chunk's byte size capacity (`Chunk.getByteCapacity()`) and the overall size of the entire chunk that is transported by a
+*Note: chunk4j works on the application layer of the network (Layer 7). There is a fixed-size overhead between a chunk's
+byte size capacity (`Chunk.getByteCapacity()`) and the overall size of the entire chunk that is transported by a
 message. Take that and all other overheads into account when designing to keep the *entire* message size under the
 transport limit.*
 
