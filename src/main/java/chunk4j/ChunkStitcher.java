@@ -29,6 +29,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.github.benmanes.caffeine.cache.RemovalListener;
 import lombok.Data;
+import lombok.Value;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -58,7 +59,7 @@ public final class ChunkStitcher implements Stitcher {
     }
 
     private static byte[] stitchAll(Set<Chunk> group) {
-        LOG.log(Level.FINER, () -> "Start stitching all chunks in group: " + group);
+        LOG.log(Level.FINEST, () -> "Start stitching all chunks in " + group);
         assert ofSameId(group);
         byte[] groupBytes = new byte[getTotalByteSize(group)];
         List<Chunk> orderedGroup = new ArrayList<>(group);
@@ -69,7 +70,7 @@ public final class ChunkStitcher implements Stitcher {
             System.arraycopy(chunk.getBytes(), 0, groupBytes, groupBytesPosition, chunkBytesLength);
             groupBytesPosition += chunkBytesLength;
         }
-        LOG.log(Level.FINER, () -> "End stitching all chunks in group: " + group);
+        LOG.log(Level.FINEST, () -> "End stitching all chunks in " + group);
         return groupBytes;
     }
 
@@ -82,7 +83,7 @@ public final class ChunkStitcher implements Stitcher {
     }
 
     @Override public Optional<byte[]> stitch(Chunk chunk) {
-        LOG.log(Level.FINER, () -> "Received chunk: " + chunk);
+        LOG.log(Level.FINEST, () -> "Received " + chunk);
         final UUID groupId = chunk.getGroupId();
         CompleteGroupHolder completeGroupHolder = new CompleteGroupHolder();
         chunkGroups.asMap().compute(groupId, (gid, group) -> {
@@ -92,15 +93,16 @@ public final class ChunkStitcher implements Stitcher {
             if (!group.add(chunk)) {
                 LOG.log(Level.WARNING, "received duplicate chunk: {0}", chunk);
             }
-            int receivedTotal = group.size();
-            int expectedTotal = chunk.getGroupSize();
-            if (receivedTotal != expectedTotal) {
-                LOG.log(Level.FINEST,
-                        () -> "Received: " + receivedTotal + " chunks, awaiting expected: " + expectedTotal
-                                + " chunks to start restoring");
+            int received = group.size();
+            int expected = chunk.getGroupSize();
+            if (received != expected) {
+                LOG.log(Level.FINER, () -> "Received " + received + " chunks while expecting " + expected
+                        + " before starting to stitch and restore, keeping group " + groupId + " in cache");
                 return group;
             }
-            LOG.log(Level.FINE, () -> "Received all: " + expectedTotal + " expected chunks");
+            LOG.log(Level.FINER, () -> "Received all " + expected
+                    + " expected chunks, starting to stitch and restore original data, evicting group " + groupId
+                    + " from cache");
             completeGroupHolder.setCompleteGroupOfChunks(group);
             return null;
         });
@@ -132,21 +134,16 @@ public final class ChunkStitcher implements Stitcher {
 
     }
 
-    private static final class InvoluntaryEvictionLogger implements RemovalListener<UUID, Set<Chunk>> {
+    @Value private static class InvoluntaryEvictionLogger implements RemovalListener<UUID, Set<Chunk>> {
 
-        private final long maxStitchTimeMillis;
-        private final long maxGroups;
-
-        public InvoluntaryEvictionLogger(long maxStitchTimeMillis, long maxGroups) {
-            this.maxStitchTimeMillis = maxStitchTimeMillis;
-            this.maxGroups = maxGroups;
-        }
+        long maxStitchTimeMillis;
+        long maxGroups;
 
         @Override public void onRemoval(UUID groupId, Set<Chunk> chunks, @Nonnull RemovalCause cause) {
             switch (cause) {
                 case EXPIRED:
                     LOG.log(Level.SEVERE,
-                            "Chunk group {0} took too long to stitch and expired after {1} milliseconds, expected {2} chunks but only received {3} when expired",
+                            "Chunk group {0} took too long to stitch and expired after {1} millis, expecting {2} chunks but only received {3} when expired",
                             new Object[] { groupId, maxStitchTimeMillis,
                                     chunks.stream().findFirst().orElseThrow(NoSuchElementException::new).getGroupSize(),
                                     chunks.size() });
