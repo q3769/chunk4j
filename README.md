@@ -142,9 +142,9 @@ public class Chunk implements Serializable {
 
 #### Usage example:
 
-Most times, you don't need to interact directly with the `Chunk`'s API methods, as the details are handled behind the
-scenes of the `Chopper` and `Stitcher` API. It suffices to know `Chunk` is a simple serializable POJO data holder that
-carries the data bytes between the `Chopper` and the `Stitcher`.
+Most often, you don't need to interact directly with the `Chunk`'s API methods; the details are already handled behind
+the scenes of the `Chopper` and `Stitcher` API. It suffices to know `Chunk` is a simple serializable POJO data holder
+that carries the data bytes between the `Chopper` and the `Stitcher`.
 
 ### The Stitcher
 
