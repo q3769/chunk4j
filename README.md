@@ -19,8 +19,8 @@ Notes:
   of writing, the default message size limit is 256KB
   with [Amazon Simple Queue Service (SQS)](https://aws.amazon.com/sqs/), and 1MB
   with [Apache Kafka](https://kafka.apache.org/); the default cache entry size limit is 1MB
-  for [Memcached](https://memcached.org/), and 512MB for [Redis](https://redis.io/). Those defaults can be customized
-  but often times defaults are there for sensible reasons.
+  for [Memcached](https://memcached.org/), and 512MB for [Redis](https://redis.io/). Those default transport limits can
+  be customized but often times the default is there for a sensible reason.
 
 ## Prerequisite
 
