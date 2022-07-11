@@ -191,8 +191,8 @@ public class MessageConsumer {
      */
     public void onReceiving(Message message) {
         final Optional<byte[]> stitchedBytes = this.stitcher.stitch(getChunk(message));
-        stitchedBytes.ifPresent(originalDomainDataBytes -> 
-                this.endClientBusinessDomainDataProcessor.process(new String(originalDomainDataBytes));
+        stitchedBytes.ifPresent(originalTextDomainDataBytes -> 
+                this.endClientBusinessDomainDataProcessor.process(new String(originalTextDomainDataBytes));
     } 
     
     private Chunk getChunk(Message message) {
