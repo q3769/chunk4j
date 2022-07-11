@@ -190,10 +190,14 @@ public class MessageConsumer {
      * Suppose the run-time invocation of this method is managed by messaging provider/transport
      */
     public void onReceiving(Message message) {
-        final Optional<byte[]> stitchedBytes = this.stitcher.stitch(message.getChunkFromPayload());
+        final Optional<byte[]> stitchedBytes = this.stitcher.stitch(getChunk(message));
         stitchedBytes.ifPresent(originalDomainDataBytes -> 
                 this.endClientBusinessDomainDataProcessor.process(new String(originalDomainDataBytes));
     } 
+    
+    private Chunk getChunk(Message message) {
+        // parse out the chunk carried by the message
+    }
     ...
 }
 ```
