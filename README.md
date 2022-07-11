@@ -86,7 +86,7 @@ public class MessageProducer {
     /**
      * Sender method of business data
      */
-    public void sendBusinessData(String dataText) {
+    public void sendBusinessDomainData(String dataText) {
         List<Chunk> chunks = this.chopper.chop(dataText.getBytes());
         this.transport.sendAll(toMessages(chunks));
     }
@@ -182,7 +182,7 @@ public class MessageConsumer {
     private Stitcher stitcher = new ChunkStitcher.Builder().build();    
     
     @Autowried
-    private OriginalBusinessDomainDataProcessor originalBusinessDomainDataProcessor;
+    private EndClientBusinessDomainDataProcessor endClientBusinessDomainDataProcessor;
         
         ...
         
@@ -192,7 +192,7 @@ public class MessageConsumer {
     public void onReceiving(Message message) {
         final Optional<byte[]> stitchedBytes = this.stitcher.stitch(message.getChunkFromPayload());
         stitchedBytes.ifPresent(originalDataBytes -> 
-                this.originalBusinessDomainDataProcessor.process(new String(originalDataBytes));
+                this.endClientBusinessDomainDataProcessor.process(new String(originalDataBytes));
     } 
     ...
 }
