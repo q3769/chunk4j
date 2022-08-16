@@ -87,12 +87,11 @@ public class MessageProducer {
      */
     public void sendEndClientBusinessDomainData(String domainDataText) {
         List<Chunk> chunks = this.chopper.chop(domainDataText.getBytes());
-        this.transport.sendAll(toMessages(chunks));
+        chunks.forEach((chunk) -> this.transport.send(toMessage(chunk));
     }
 
-    private List<Message> toMessages(List<Chunk> chunks) {
-        // pack the input group of chunks 1:1 into transport messages, 
-        // each message carries a single chunk of data.
+    private Message toMessage(Chunk chunk) {
+        // pack a chunk into a transport-specific message
         ...
     }
     ...
@@ -171,7 +170,7 @@ public interface Stitcher {
 ```
 
 On the stitcher side, a group has to gather all the previously chopped chunks before the original data blob represented
-by this group can be stitched together and restored.
+by this group can be stitched back together and restored.
 
 #### Usage example:
 
