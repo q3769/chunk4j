@@ -86,8 +86,8 @@ public class MessageProducer {
      * Sender method of business data
      */
     public void sendEndClientBusinessDomainData(String domainDataText) {
-        List<Chunk> chunks = this.chopper.chop(domainDataText.getBytes());
-        chunks.forEach((chunk) -> this.transport.send(toMessage(chunk));
+        chopper.chop(domainDataText.getBytes())
+                .forEach((chunk) -> transport.send(toMessage(chunk));
     }
 
     private Message toMessage(Chunk chunk) {
@@ -188,12 +188,12 @@ public class MessageConsumer {
      * Suppose the run-time invocation of this method is managed by messaging provider/transport
      */
     public void onReceiving(Message message) {
-        final Optional<byte[]> stitchedBytes = this.stitcher.stitch(getChunk(message));
-        stitchedBytes.ifPresent(originalTextDomainDataBytes -> 
-                this.endClientBusinessDomainDataProcessor.process(new String(originalTextDomainDataBytes));
+        stitcher.stitch(toChunk(message))
+                .ifPresent(originalTextDomainDataBytes -> 
+                endClientBusinessDomainDataProcessor.process(new String(originalTextDomainDataBytes));
     } 
     
-    private Chunk getChunk(Message message) {
+    private Chunk toChunk(Message message) {
         // parse out the chunk carried by the message
     }
     ...
