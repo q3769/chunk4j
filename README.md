@@ -85,7 +85,7 @@ public class MessageProducer {
     /**
      * Sender method of business data
      */
-    public void sendEndClientBusinessDomainData(String domainDataText) {
+    public void sendBusinessDomainData(String domainDataText) {
         chopper.chop(domainDataText.getBytes())
                 .forEach((chunk) -> transport.send(toMessage(chunk));
     }
@@ -180,7 +180,7 @@ public class MessageConsumer {
     private Stitcher stitcher = new ChunkStitcher.Builder().build();    
     
     @Autowried
-    private EndClientBusinessDomainDataProcessor endClientBusinessDomainDataProcessor;
+    private DomainDataProcessor domainDataProcessor;
         
         ...
         
@@ -190,11 +190,11 @@ public class MessageConsumer {
     public void onReceiving(Message message) {
         stitcher.stitch(toChunk(message))
                 .ifPresent(originalTextDomainDataBytes -> 
-                endClientBusinessDomainDataProcessor.process(new String(originalTextDomainDataBytes));
+                domainDataProcessor.process(new String(originalTextDomainDataBytes));
     } 
     
     private Chunk toChunk(Message message) {
-        // parse out the chunk carried by the message
+        // parse/deserialize the chunk POJO carried by the incoming message
     }
     ...
 }
