@@ -91,7 +91,7 @@ public class MessageProducer {
     }
 
     private Message toMessage(Chunk chunk) {
-        // pack a chunk into a transport-specific message
+        // pack/serialize a chunk POJO into a transport-specific message
         ...
     }
     ...
