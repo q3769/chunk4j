@@ -145,9 +145,9 @@ public class Chunk implements Serializable {
 
 #### Usage example:
 
-Normally, you don't need to interact with the `Chunk`'s API methods; those details are already handled behind the scenes
-of the `Chopper` and `Stitcher` API. It suffices to know that `Chunk` is a simple POJO data holder; serializable, it
-carries the data bytes travelling from the `Chopper` to the `Stitcher`.
+chunk4j aims to handle most details of the `Chunk` behind the scenes of the `Chopper` and `Stitcher` API. For the API
+client, it suffices to know that `Chunk` is a simple POJO data holder; serializable, it carries the data bytes
+travelling from the `Chopper` to the `Stitcher`.
 
 ### The Stitcher
 
