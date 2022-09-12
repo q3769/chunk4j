@@ -38,7 +38,10 @@ import java.util.UUID;
  *
  * @author Qingtian Wang
  */
-@Value @EqualsAndHashCode(onlyExplicitlyIncluded = true) @Builder public class Chunk implements Serializable {
+@Value
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Builder
+public class Chunk implements Serializable {
 
     private static final long serialVersionUID = 0L;
 
@@ -50,14 +53,16 @@ import java.util.UUID;
     /**
      * The group ID of the original data blob. All chunks in the same group share the same group ID.
      */
-    @EqualsAndHashCode.Include UUID groupId;
+    @EqualsAndHashCode.Include
+    UUID groupId;
 
     /**
      * Ordered index at which this current chunk is positioned inside the group. Chunks are chopped off from the
      * original data bytes in sequential order, indexed as such, and assigned with the same group ID as all other chunks
      * in the group that represents the original data bytes.
      */
-    @EqualsAndHashCode.Include int index;
+    @EqualsAndHashCode.Include
+    int index;
 
     /**
      * Total number of chunks the original data blob is chopped to form the group.

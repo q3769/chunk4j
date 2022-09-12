@@ -47,7 +47,8 @@ class ByteChunksTest {
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
     private static final String DATA_TEXT2 = DATA_TEXT1 + DATA_TEXT1;
 
-    @BeforeAll public static void setLoggingLevel() {
+    @BeforeAll
+    public static void setLoggingLevel() {
         Logger root = Logger.getLogger("");
         // .level= ALL
         root.setLevel(TEST_RUN_LOG_LEVEL);
@@ -59,7 +60,8 @@ class ByteChunksTest {
         }
     }
 
-    @Test void testByteChunks() {
+    @Test
+    void testByteChunks() {
         final int chunkByteCapacity = 4;
         final ChunkChopper chopper = ChunkChopper.ofChunkByteSize(chunkByteCapacity);
         final ChunkStitcher stitcher = new ChunkStitcher.Builder().build();
@@ -79,6 +81,5 @@ class ByteChunksTest {
             assertEquals(DATA_TEXT2, dataStitched1);
         else
             assertEquals(DATA_TEXT2, dataStitched2);
-
     }
 }

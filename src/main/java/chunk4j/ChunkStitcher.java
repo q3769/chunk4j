@@ -83,7 +83,8 @@ public final class ChunkStitcher implements Stitcher {
         return group.stream().map(Chunk::getGroupId).distinct().count() == 1;
     }
 
-    @Override public Optional<byte[]> stitch(Chunk chunk) {
+    @Override
+    public Optional<byte[]> stitch(Chunk chunk) {
         LOG.log(Level.FINEST, () -> "Received " + chunk);
         final UUID groupId = chunk.getGroupId();
         CompleteGroupHolder completeGroupHolder = new CompleteGroupHolder();
@@ -132,15 +133,16 @@ public final class ChunkStitcher implements Stitcher {
         public ChunkStitcher build() {
             return new ChunkStitcher(this);
         }
-
     }
 
-    @Value private static class InvoluntaryEvictionLogger implements RemovalListener<UUID, Set<Chunk>> {
+    @Value
+    private static class InvoluntaryEvictionLogger implements RemovalListener<UUID, Set<Chunk>> {
 
         long maxStitchTimeMillis;
         long maxGroups;
 
-        @Override public void onRemoval(UUID groupId, Set<Chunk> chunks, @Nonnull RemovalCause cause) {
+        @Override
+        public void onRemoval(UUID groupId, Set<Chunk> chunks, @Nonnull RemovalCause cause) {
             switch (cause) {
                 case EXPIRED:
                     LOG.log(Level.SEVERE,
@@ -163,7 +165,8 @@ public final class ChunkStitcher implements Stitcher {
         }
     }
 
-    @Data private static class CompleteGroupHolder {
+    @Data
+    private static class CompleteGroupHolder {
 
         Set<Chunk> completeGroupOfChunks;
     }

@@ -48,7 +48,8 @@ public final class ChunkChopper implements Chopper {
         return new ChunkChopper(maxChunkByteSize);
     }
 
-    @Override public List<Chunk> chop(byte[] bytes) {
+    @Override
+    public List<Chunk> chop(byte[] bytes) {
         final UUID groupId = UUID.randomUUID();
         final int groupSize = numberOfChunks(bytes);
         final List<Chunk> group = new ArrayList<>();
