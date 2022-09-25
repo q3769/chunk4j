@@ -191,8 +191,8 @@ public class MessageConsumer {
      */
     public void onReceiving(Message message) {
         stitcher.stitch(toChunk(message))
-                .ifPresent(originalTextDomainDataBytes -> 
-                domainDataProcessor.process(new String(originalTextDomainDataBytes));
+                .ifPresent(originalDomainDataBytes -> 
+                domainDataProcessor.process(new String(originalDomainDataBytes));
     } 
     
     private Chunk toChunk(Message message) {
