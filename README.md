@@ -91,7 +91,7 @@ public class MessageProducer {
     }
 
     private Message toMessage(Chunk chunk) {
-        // pack/serialize a chunk POJO into a transport-specific message
+        // pack/serialize/marshal a chunk POJO into a transport-specific message
         ...
     }
     ...
@@ -147,7 +147,9 @@ public class Chunk implements Serializable {
 
 chunk4j aims to handle most details of the `Chunk` behind the scenes of the `Chopper` and `Stitcher` API. For the API
 client, it suffices to know that `Chunk` is a simple POJO data holder; serializable, it carries the data bytes
-travelling from the `Chopper` to the `Stitcher`.
+travelling from the `Chopper` to the `Stitcher`. To transport Chunks over the network from the Chopper to the Sticher,
+the API client simply needs to pack the Chunk into a transport-specific message on the Chopper's end, and unpack the
+message back to a Chunk on the Stitcher's end, using the POJO marshal-unmarshal technique applicable to the transport.
 
 ### The Stitcher
 
@@ -194,7 +196,7 @@ public class MessageConsumer {
     } 
     
     private Chunk toChunk(Message message) {
-        // parse/deserialize the chunk POJO carried by the incoming message
+        // unpack/deserialize/unmarshal the chunk POJO carried by the incoming message
     }
     ...
 }
