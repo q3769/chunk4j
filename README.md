@@ -91,7 +91,7 @@ public class MessageProducer {
     }
 
     /**
-     * pack/serialize/marshal a chunk POJO into a transport-specific message
+     * pack/serialize/marshal the chunk POJO into a transport-specific message
      */
     private Message toMessage(Chunk chunk) {
         ...
@@ -198,7 +198,7 @@ public class MessageConsumer {
     } 
     
     /**
-     * unpack/deserialize/unmarshal the chunk POJO carried by the incoming message
+     * unpack/deserialize/unmarshal the chunk POJO from the transport-specific message
      */
     private Chunk toChunk(Message message) {
         ...
