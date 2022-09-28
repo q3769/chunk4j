@@ -90,8 +90,10 @@ public class MessageProducer {
                 .forEach((chunk) -> transport.send(toMessage(chunk));
     }
 
+    /**
+     * pack/serialize/marshal a chunk POJO into a transport-specific message
+     */
     private Message toMessage(Chunk chunk) {
-        // pack/serialize/marshal a chunk POJO into a transport-specific message
         ...
     }
     ...
@@ -195,8 +197,11 @@ public class MessageConsumer {
                 domainDataProcessor.process(new String(originalDomainDataBytes));
     } 
     
+    /**
+     * unpack/deserialize/unmarshal the chunk POJO carried by the incoming message
+     */
     private Chunk toChunk(Message message) {
-        // unpack/deserialize/unmarshal the chunk POJO carried by the incoming message
+      ...
     }
     ...
 }
