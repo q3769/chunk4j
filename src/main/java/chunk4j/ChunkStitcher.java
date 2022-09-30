@@ -45,15 +45,17 @@ public final class ChunkStitcher implements Stitcher {
     private static final long DEFAULT_MAX_CHUNK_GROUP_COUNT = Long.MAX_VALUE;
     private static final long DEFAULT_MAX_STITCH_TIME_MILLIS = Long.MAX_VALUE;
     private final Cache<UUID, Set<Chunk>> chunkGroups;
+    private final Long maxStitchTimeMillis;
+    private final Long maxGroups;
 
     private ChunkStitcher(Builder builder) {
-        final long maxStitchTimeMillis =
+        maxStitchTimeMillis =
                 builder.maxStitchTimeMillis == null ? DEFAULT_MAX_STITCH_TIME_MILLIS : builder.maxStitchTimeMillis;
-        final long maxGroups = builder.maxGroups == null ? DEFAULT_MAX_CHUNK_GROUP_COUNT : builder.maxGroups;
+        maxGroups = builder.maxGroups == null ? DEFAULT_MAX_CHUNK_GROUP_COUNT : builder.maxGroups;
         this.chunkGroups = Caffeine.newBuilder()
                 .expireAfterWrite(maxStitchTimeMillis, TimeUnit.MILLISECONDS)
                 .maximumSize(maxGroups)
-                .evictionListener(new InvoluntaryEvictionLogger(maxStitchTimeMillis, maxGroups))
+                .evictionListener(new InvoluntaryEvictionLogger())
                 .build();
     }
 
@@ -97,13 +99,15 @@ public final class ChunkStitcher implements Stitcher {
             int received = group.size();
             int expected = chunk.getGroupSize();
             if (received != expected) {
-                log.log(Level.FINER, () -> "Received " + received + " chunks while expecting " + expected
-                        + " before starting to stitch and restore, keeping group " + groupId + " in cache");
+                log.log(Level.FINER,
+                        () -> "Received " + received + " chunks while expecting " + expected
+                                + " before starting to stitch and restore, keeping group " + groupId + " in cache");
                 return group;
             }
-            log.log(Level.FINER, () -> "Received all " + expected
-                    + " expected chunks, starting to stitch and restore original data, evicting group " + groupId
-                    + " from cache");
+            log.log(Level.FINER,
+                    () -> "Received all " + expected
+                            + " expected chunks, starting to stitch and restore original data, evicting group "
+                            + groupId + " from cache");
             completeGroupHolder.setCompleteGroupOfChunks(group);
             return null;
         });
@@ -134,15 +138,13 @@ public final class ChunkStitcher implements Stitcher {
         }
     }
 
-    private static class InvoluntaryEvictionLogger implements RemovalListener<UUID, Set<Chunk>> {
+    @Data
+    private static class CompleteGroupHolder {
 
-        private final long maxStitchTimeMillis;
-        private final long maxGroups;
+        Set<Chunk> completeGroupOfChunks;
+    }
 
-        private InvoluntaryEvictionLogger(long maxStitchTimeMillis, long maxGroups) {
-            this.maxStitchTimeMillis = maxStitchTimeMillis;
-            this.maxGroups = maxGroups;
-        }
+    private class InvoluntaryEvictionLogger implements RemovalListener<UUID, Set<Chunk>> {
 
         @Override
         public void onRemoval(UUID groupId, Set<Chunk> chunks, @Nonnull RemovalCause cause) {
@@ -155,7 +157,8 @@ public final class ChunkStitcher implements Stitcher {
                                     chunks.size() });
                     break;
                 case SIZE:
-                    log.log(Level.SEVERE, "Chunk group {0} was removed due to exceeding max group count {1}",
+                    log.log(Level.SEVERE,
+                            "Chunk group {0} was removed due to exceeding max group count {1}",
                             new Object[] { groupId, maxGroups });
                     break;
                 case EXPLICIT:
@@ -166,11 +169,5 @@ public final class ChunkStitcher implements Stitcher {
                     throw new AssertionError("Unexpected eviction cause: " + cause.name());
             }
         }
-    }
-
-    @Data
-    private static class CompleteGroupHolder {
-
-        Set<Chunk> completeGroupOfChunks;
     }
 }
