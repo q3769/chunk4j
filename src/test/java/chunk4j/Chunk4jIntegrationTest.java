@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author Qingtian Wang
  */
-class ByteChunksTest {
+class Chunk4jIntegrationTest {
 
     private static final Level TEST_RUN_LOG_LEVEL = Level.FINER;
     private static final String DATA_TEXT1 =
@@ -61,7 +61,7 @@ class ByteChunksTest {
     }
 
     @Test
-    void testByteChunks() {
+    void chunksInRandomOrder() {
         final int chunkByteCapacity = 4;
         final ChunkChopper chopper = ChunkChopper.ofChunkByteSize(chunkByteCapacity);
         final ChunkStitcher stitcher = new ChunkStitcher.Builder().build();
