@@ -27,15 +27,14 @@ package chunk4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Qingtian Wang
@@ -62,25 +61,18 @@ class Chunk4jIntegrationTest {
 
     @Test
     void chunksInRandomOrder() {
-        final int chunkByteCapacity = 4;
-        final ChunkChopper chopper = ChunkChopper.ofChunkByteSize(chunkByteCapacity);
-        final ChunkStitcher stitcher = new ChunkStitcher.Builder().build();
+        ChunkChopper chopper = ChunkChopper.ofChunkByteSize(4);
+        ChunkStitcher stitcher = new ChunkStitcher.Builder().build();
 
-        final List<Chunk> choppedMingledAndScrambledData = new ArrayList<>();
+        List<Chunk> choppedMingledAndScrambledData = new ArrayList<>();
         choppedMingledAndScrambledData.addAll(chopper.chop(DATA_TEXT1.getBytes()));
         choppedMingledAndScrambledData.addAll(chopper.chop(DATA_TEXT2.getBytes()));
         Collections.shuffle(choppedMingledAndScrambledData);
-        final List<byte[]> stitched = new ArrayList<>();
+        Set<byte[]> stitched = new HashSet<>();
         choppedMingledAndScrambledData.forEach(chunk -> stitcher.stitch(chunk).ifPresent(stitched::add));
+        Set<String> restored = stitched.stream().map(String::new).collect(Collectors.toSet());
 
-        final int originalDataUnits = 2;
-        assertEquals(originalDataUnits, stitched.size());
-        final String dataStitched1 = new String(stitched.get(0));
-        final String dataStitched2 = new String(stitched.get(1));
-        if (!DATA_TEXT1.equals(dataStitched1)) {
-            assertEquals(DATA_TEXT2, dataStitched1);
-        } else {
-            assertEquals(DATA_TEXT2, dataStitched2);
-        }
+        assertTrue(restored.contains(DATA_TEXT1));
+        assertTrue(restored.contains(DATA_TEXT2));
     }
 }
