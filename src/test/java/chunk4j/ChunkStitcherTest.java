@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
 
-import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -57,12 +56,9 @@ class ChunkStitcherTest {
 
             ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
             for (Chunk chunk : chunks) {
-                ScheduledFuture<Optional<byte[]>> optionalScheduledFuture =
-                        scheduledExecutorService.schedule(() -> tot.stitch(chunk),
-                                maxTimePerStitch,
-                                TimeUnit.MILLISECONDS);
-                await().until(optionalScheduledFuture::isDone);
-                stitched = optionalScheduledFuture.get();
+                stitched = scheduledExecutorService.schedule(() -> tot.stitch(chunk),
+                        maxTimePerStitch,
+                        TimeUnit.MILLISECONDS).get();
             }
 
             assertFalse(stitched.isPresent(), "stitcher should have expired in [" + lessThanNeededToStitchAll + "]");

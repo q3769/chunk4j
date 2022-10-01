@@ -140,21 +140,36 @@ public final class ChunkStitcher implements Stitcher {
         }
     }
 
+    /**
+     * The stitcher builder.
+     */
     public static class Builder {
 
         private Duration maxStitchTime;
         private Long maxGroups;
 
+        /**
+         * @param maxStitchTime max duration from the very first chunk received by the stitcher to the original data is
+         *                      restored completely
+         * @return the fluent builder
+         */
         public Builder maxStitchTime(Duration maxStitchTime) {
             this.maxStitchTime = maxStitchTime;
             return this;
         }
 
+        /**
+         * @param maxGroups max number of pending stitch groups. These groups will take up memory at runtime.
+         * @return the fluent builder
+         */
         public Builder maxGroups(long maxGroups) {
             this.maxGroups = maxGroups;
             return this;
         }
 
+        /**
+         * @return chunk stitcher built
+         */
         public ChunkStitcher build() {
             return new ChunkStitcher(this);
         }
