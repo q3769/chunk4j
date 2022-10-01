@@ -24,16 +24,13 @@
 
 package chunk4j;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.RemovalCause;
-import com.github.benmanes.caffeine.cache.RemovalListener;
+import com.github.benmanes.caffeine.cache.*;
 import lombok.Data;
 import lombok.extern.java.Log;
 
 import javax.annotation.Nonnull;
+import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 /**
@@ -43,17 +40,18 @@ import java.util.logging.Level;
 public final class ChunkStitcher implements Stitcher {
 
     private static final long DEFAULT_MAX_CHUNK_GROUP_COUNT = Long.MAX_VALUE;
-    private static final long DEFAULT_MAX_STITCH_TIME_MILLIS = Long.MAX_VALUE;
+    private static final long DEFAULT_MAX_STITCH_TIME_NANOS = Long.MAX_VALUE;
+
     private final Cache<UUID, Set<Chunk>> chunkGroups;
-    private final Long maxStitchTimeMillis;
+    private final Duration maxStitchTime;
     private final Long maxGroups;
 
     private ChunkStitcher(Builder builder) {
-        maxStitchTimeMillis =
-                builder.maxStitchTimeMillis == null ? DEFAULT_MAX_STITCH_TIME_MILLIS : builder.maxStitchTimeMillis;
+        maxStitchTime =
+                builder.maxStitchTime == null ? Duration.ofNanos(DEFAULT_MAX_STITCH_TIME_NANOS) : builder.maxStitchTime;
         maxGroups = builder.maxGroups == null ? DEFAULT_MAX_CHUNK_GROUP_COUNT : builder.maxGroups;
         this.chunkGroups = Caffeine.newBuilder()
-                .expireAfterWrite(maxStitchTimeMillis, TimeUnit.MILLISECONDS)
+                .expireAfter(new SinceCreation(maxStitchTime))
                 .maximumSize(maxGroups)
                 .evictionListener(new InvoluntaryEvictionLogger())
                 .build();
@@ -86,7 +84,7 @@ public final class ChunkStitcher implements Stitcher {
 
     @Override
     public Optional<byte[]> stitch(Chunk chunk) {
-        log.log(Level.FINEST, () -> "Received " + chunk);
+        log.log(Level.FINEST, () -> "received: " + chunk);
         final UUID groupId = chunk.getGroupId();
         CompleteGroupHolder completeGroupHolder = new CompleteGroupHolder();
         chunkGroups.asMap().compute(groupId, (gid, group) -> {
@@ -100,14 +98,14 @@ public final class ChunkStitcher implements Stitcher {
             int expected = chunk.getGroupSize();
             if (received != expected) {
                 log.log(Level.FINER,
-                        () -> "Received " + received + " chunks while expecting " + expected
-                                + " before starting to stitch and restore, keeping group " + groupId + " in cache");
+                        () -> "received [" + received + "] chunks while expecting [" + expected
+                                + "] before starting to stitch and restore, keeping group [" + groupId + "] in cache");
                 return group;
             }
             log.log(Level.FINER,
-                    () -> "Received all " + expected
-                            + " expected chunks, starting to stitch and restore original data, evicting group "
-                            + groupId + " from cache");
+                    () -> "received all [" + expected
+                            + "] expected chunks, starting to stitch and restore original data, evicting group ["
+                            + groupId + "] from cache");
             completeGroupHolder.setCompleteGroupOfChunks(group);
             return null;
         });
@@ -118,13 +116,37 @@ public final class ChunkStitcher implements Stitcher {
         return Optional.of(stitchAll(groupChunks));
     }
 
+    private static class SinceCreation implements Expiry<UUID, Set<Chunk>> {
+
+        private final Duration duration;
+
+        SinceCreation(Duration duration) {
+            this.duration = duration;
+        }
+
+        @Override
+        public long expireAfterCreate(UUID uuid, Set<Chunk> chunks, long currentTime) {
+            return duration.toNanos();
+        }
+
+        @Override
+        public long expireAfterUpdate(UUID uuid, Set<Chunk> chunks, long currentTime, long currentDuration) {
+            return currentDuration;
+        }
+
+        @Override
+        public long expireAfterRead(UUID uuid, Set<Chunk> chunks, long currentTime, long currentDuration) {
+            return currentDuration;
+        }
+    }
+
     public static class Builder {
 
-        private Long maxStitchTimeMillis;
+        private Duration maxStitchTime;
         private Long maxGroups;
 
-        public Builder maxStitchTimeMillis(long maxStitchTimeMillis) {
-            this.maxStitchTimeMillis = maxStitchTimeMillis;
+        public Builder maxStitchTime(Duration maxStitchTime) {
+            this.maxStitchTime = maxStitchTime;
             return this;
         }
 
@@ -151,14 +173,14 @@ public final class ChunkStitcher implements Stitcher {
             switch (cause) {
                 case EXPIRED:
                     log.log(Level.SEVERE,
-                            "Chunk group {0} took too long to stitch and expired after {1} millis, expecting {2} chunks but only received {3} when expired",
-                            new Object[] { groupId, maxStitchTimeMillis,
+                            "chunk group [{0}] took too long to stitch and expired after [{1}], expecting [{2}] chunks but only received [{3}] when expired",
+                            new Object[] { groupId, maxStitchTime,
                                     chunks.stream().findFirst().orElseThrow(NoSuchElementException::new).getGroupSize(),
                                     chunks.size() });
                     break;
                 case SIZE:
                     log.log(Level.SEVERE,
-                            "Chunk group {0} was removed due to exceeding max group count {1}",
+                            "chunk group [{0}] was removed due to exceeding max group count [{1}]",
                             new Object[] { groupId, maxGroups });
                     break;
                 case EXPLICIT:
