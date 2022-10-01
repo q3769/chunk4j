@@ -227,12 +227,12 @@ no matter how much time has passed without being able to restore the group back 
 new ChunkStitcher.Builder().build()
 ```
 
-Both of those aspects, though, can be customized. The following stitcher will discard a group of chunks if 2 seconds of
+Both of those aspects, though, can be customized. The following stitcher will discard a group of chunks if 5 seconds of
 time have passed since the stitcher was asked to stitch the very first chunk of the group, but hasn't received all the
 chunks needed to restore the whole group back to the original data unit:
 
 ```
-new ChunkStitcher.Builder().maxStitchTimeMillis(2000).build()
+new ChunkStitcher.Builder().maxStitchTime(Duration.ofSeonds(5)).build()
 ```
 
 This stitcher will discard some group(s) of chunks when there are more than 100 groups of original data pending
@@ -245,7 +245,7 @@ new ChunkStitcher.Builder().maxGroups(100).build()
 This stitcher is customized by a combination of both aspects:
 
 ```
-new ChunkStitcher.Builder().maxStitchTimeMillis(2000).maxGroups(100).build()
+new ChunkStitcher.Builder().maxStitchTime(Duration.ofSeconds(5)).maxGroups(100).build()
 ```
 
 ### Hints on using chunk4j API in messaging
