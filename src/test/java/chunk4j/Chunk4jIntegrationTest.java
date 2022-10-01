@@ -77,9 +77,10 @@ class Chunk4jIntegrationTest {
         assertEquals(originalDataUnits, stitched.size());
         final String dataStitched1 = new String(stitched.get(0));
         final String dataStitched2 = new String(stitched.get(1));
-        if (!DATA_TEXT1.equals(dataStitched1))
+        if (!DATA_TEXT1.equals(dataStitched1)) {
             assertEquals(DATA_TEXT2, dataStitched1);
-        else
+        } else {
             assertEquals(DATA_TEXT2, dataStitched2);
+        }
     }
 }
