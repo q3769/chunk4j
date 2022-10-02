@@ -24,14 +24,9 @@
 
 package chunk4j;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,23 +36,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class Chunk4jIntegrationTest {
 
-    private static final Level TEST_RUN_LOG_LEVEL = Level.FINER;
     private static final String DATA_TEXT1 =
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
     private static final String DATA_TEXT2 = DATA_TEXT1 + DATA_TEXT1;
-
-    @BeforeAll
-    public static void setLoggingLevel() {
-        Logger root = Logger.getLogger("");
-        // .level= ALL
-        root.setLevel(TEST_RUN_LOG_LEVEL);
-        for (Handler handler : root.getHandlers()) {
-            if (handler instanceof ConsoleHandler) {
-                // java.util.logging.ConsoleHandler.level = ALL
-                handler.setLevel(TEST_RUN_LOG_LEVEL);
-            }
-        }
-    }
 
     @Test
     void chunksInRandomOrder() {
