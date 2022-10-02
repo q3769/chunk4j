@@ -183,7 +183,7 @@ public final class ChunkStitcher implements Stitcher {
         public void onRemoval(UUID groupId, Set<Chunk> chunks, @Nonnull RemovalCause cause) {
             switch (cause) {
                 case EXPIRED:
-                    log.atError()
+                    log.atWarn()
                             .log("chunk group [{}] took too long to stitch and expired after [{}], expecting [{}] chunks but only received [{}] when expired",
                                     groupId,
                                     maxStitchTime,
@@ -191,7 +191,7 @@ public final class ChunkStitcher implements Stitcher {
                                     chunks.size());
                     break;
                 case SIZE:
-                    log.atError()
+                    log.atWarn()
                             .log("chunk group [{}] was removed due to exceeding max group count [{}]",
                                     groupId,
                                     maxGroups);
