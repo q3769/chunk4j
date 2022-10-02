@@ -45,12 +45,12 @@ class Chunk4jIntegrationTest {
         ChunkChopper chopper = ChunkChopper.ofChunkByteSize(4);
         ChunkStitcher stitcher = new ChunkStitcher.Builder().build();
 
-        List<Chunk> choppedMingledAndScrambledData = new ArrayList<>();
-        choppedMingledAndScrambledData.addAll(chopper.chop(DATA_TEXT1.getBytes()));
-        choppedMingledAndScrambledData.addAll(chopper.chop(DATA_TEXT2.getBytes()));
-        Collections.shuffle(choppedMingledAndScrambledData);
+        List<Chunk> choppedMingledAndScrambled = new ArrayList<>();
+        choppedMingledAndScrambled.addAll(chopper.chop(DATA_TEXT1.getBytes()));
+        choppedMingledAndScrambled.addAll(chopper.chop(DATA_TEXT2.getBytes()));
+        Collections.shuffle(choppedMingledAndScrambled);
         Set<byte[]> stitched = new HashSet<>();
-        choppedMingledAndScrambledData.forEach(chunk -> stitcher.stitch(chunk).ifPresent(stitched::add));
+        choppedMingledAndScrambled.forEach(chunk -> stitcher.stitch(chunk).ifPresent(stitched::add));
         Set<String> restored = stitched.stream().map(String::new).collect(Collectors.toSet());
 
         assertTrue(restored.contains(DATA_TEXT1));

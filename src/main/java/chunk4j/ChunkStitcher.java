@@ -26,11 +26,13 @@ package chunk4j;
 
 import com.github.benmanes.caffeine.cache.*;
 import lombok.Data;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Nonnull;
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Qingtian Wang
@@ -57,8 +59,7 @@ public final class ChunkStitcher implements Stitcher {
     }
 
     private static byte[] stitchAll(Set<Chunk> group) {
-        log.atDebug().log("Start stitching all chunks in group: " + group);
-        assert ofSameId(group);
+        UUID groupId = requireSameId(group);
         byte[] groupBytes = new byte[getTotalByteSize(group)];
         List<Chunk> orderedGroup = new ArrayList<>(group);
         orderedGroup.sort(Comparator.comparingInt(Chunk::getIndex));
@@ -69,21 +70,26 @@ public final class ChunkStitcher implements Stitcher {
             System.arraycopy(chunkBytes, 0, groupBytes, groupBytesPosition, chunkBytesLength);
             groupBytesPosition += chunkBytesLength;
         }
-        log.atDebug().log("End stitching all chunks in group: " + group);
+        log.atDebug().log("stitched all chunks in group [{}]", groupId);
         return groupBytes;
     }
 
-    private static int getTotalByteSize(Set<Chunk> group) {
+    private static int getTotalByteSize(@NonNull Set<Chunk> group) {
         return group.stream().mapToInt(chunk -> chunk.getBytes().length).sum();
     }
 
-    private static boolean ofSameId(Set<Chunk> group) {
-        return group.stream().map(Chunk::getGroupId).distinct().count() == 1;
+    private static UUID requireSameId(@NonNull Set<Chunk> group) {
+        List<UUID> distinctIds = group.parallelStream().map(Chunk::getGroupId).distinct().collect(Collectors.toList());
+        if (distinctIds.size() != 1) {
+            throw new IllegalArgumentException(
+                    "expecting one single group id for all chunks but got more: " + distinctIds.size());
+        }
+        return distinctIds.get(0);
     }
 
     @Override
     public Optional<byte[]> stitch(Chunk chunk) {
-        log.atDebug().log("received: {}", chunk);
+        log.atTrace().log("received: {}", chunk);
         final UUID groupId = chunk.getGroupId();
         CompleteGroupHolder completeGroupHolder = new CompleteGroupHolder();
         chunkGroups.asMap().compute(groupId, (gid, group) -> {
