@@ -189,7 +189,8 @@ public final class ChunkStitcher implements Stitcher {
                 case EXPIRED:
                     log.log(Level.SEVERE,
                             "chunk group [{0}] took too long to stitch and expired after [{1}], expecting [{2}] chunks but only received [{3}] when expired",
-                            new Object[] { groupId, maxStitchTime,
+                            new Object[] { groupId,
+                                    maxStitchTime,
                                     chunks.stream().findFirst().orElseThrow(NoSuchElementException::new).getGroupSize(),
                                     chunks.size() });
                     break;
