@@ -32,7 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 import javax.annotation.Nonnull;
 import java.time.Duration;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Qingtian Wang
@@ -59,7 +58,6 @@ public final class ChunkStitcher implements Stitcher {
     }
 
     private static byte[] stitchAll(Set<Chunk> group) {
-        UUID groupId = requireSameId(group);
         byte[] groupBytes = new byte[getTotalByteSize(group)];
         List<Chunk> orderedGroup = new ArrayList<>(group);
         orderedGroup.sort(Comparator.comparingInt(Chunk::getIndex));
@@ -70,21 +68,12 @@ public final class ChunkStitcher implements Stitcher {
             System.arraycopy(chunkBytes, 0, groupBytes, groupBytesPosition, chunkBytesLength);
             groupBytesPosition += chunkBytesLength;
         }
-        log.atDebug().log("stitched all [{}] chunks in group [{}]", group.size(), groupId);
+        log.atDebug().log("stitched all [{}] chunks in group [{}]", group.size(), orderedGroup.get(0).getGroupId());
         return groupBytes;
     }
 
     private static int getTotalByteSize(@NonNull Set<Chunk> group) {
         return group.stream().mapToInt(chunk -> chunk.getBytes().length).sum();
-    }
-
-    private static UUID requireSameId(@NonNull Set<Chunk> group) {
-        List<UUID> distinctIds = group.parallelStream().map(Chunk::getGroupId).distinct().collect(Collectors.toList());
-        if (distinctIds.size() != 1) {
-            throw new IllegalArgumentException(
-                    "expecting one single group id for all chunks but got more: " + distinctIds.size());
-        }
-        return distinctIds.get(0);
     }
 
     @Override
