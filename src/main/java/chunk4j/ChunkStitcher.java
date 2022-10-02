@@ -70,7 +70,7 @@ public final class ChunkStitcher implements Stitcher {
             System.arraycopy(chunkBytes, 0, groupBytes, groupBytesPosition, chunkBytesLength);
             groupBytesPosition += chunkBytesLength;
         }
-        log.atDebug().log("stitched all chunks in group [{}]", groupId);
+        log.atDebug().log("stitched all [{}] chunks in group [{}]", group.size(), groupId);
         return groupBytes;
     }
 
