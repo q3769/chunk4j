@@ -91,16 +91,17 @@ public final class ChunkStitcher implements Stitcher {
             int received = group.size();
             int expected = chunk.getGroupSize();
             if (received != expected) {
-                log.atDebug().log("received [{}] chunks while expecting [{}], keeping group [{}] in cache",
-                        received,
-                        expected,
-                        groupId);
+                log.atDebug()
+                        .log("received [{}] chunks while expecting [{}], keeping group [{}] in cache",
+                                received,
+                                expected,
+                                groupId);
                 return group;
             }
-            log.atDebug().log(
-                    "received all [{}] expected chunks, starting to stitch and restore original data and evicting group [{}] from cache",
-                    expected,
-                    groupId);
+            log.atDebug()
+                    .log("received all [{}] expected chunks, starting to stitch and restore original data and evicting group [{}] from cache",
+                            expected,
+                            groupId);
             completeGroupHolder.setCompleteGroupOfChunks(group);
             return null;
         });
@@ -182,17 +183,18 @@ public final class ChunkStitcher implements Stitcher {
         public void onRemoval(UUID groupId, Set<Chunk> chunks, @Nonnull RemovalCause cause) {
             switch (cause) {
                 case EXPIRED:
-                    log.atWarn().log(
-                            "chunk group [{}] took too long to stitch and expired after [{}], expecting [{}] chunks but only received [{}] when expired",
-                            groupId,
-                            maxStitchTime,
-                            chunks.stream().findFirst().orElseThrow(NoSuchElementException::new).getGroupSize(),
-                            chunks.size());
+                    log.atWarn()
+                            .log("chunk group [{}] took too long to stitch and expired after [{}], expecting [{}] chunks but only received [{}] when expired",
+                                    groupId,
+                                    maxStitchTime,
+                                    chunks.stream().findFirst().orElseThrow(NoSuchElementException::new).getGroupSize(),
+                                    chunks.size());
                     break;
                 case SIZE:
-                    log.atWarn().log("chunk group [{}] was removed due to exceeding max group count [{}]",
-                            groupId,
-                            maxGroups);
+                    log.atWarn()
+                            .log("chunk group [{}] was removed due to exceeding max group count [{}]",
+                                    groupId,
+                                    maxGroups);
                     break;
                 case EXPLICIT:
                 case REPLACED:
