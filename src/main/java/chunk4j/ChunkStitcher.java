@@ -25,9 +25,9 @@
 package chunk4j;
 
 import com.github.benmanes.caffeine.cache.*;
+import elf4j.Logger;
 import lombok.Data;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Nonnull;
 import java.time.Duration;
@@ -36,12 +36,10 @@ import java.util.*;
 /**
  * @author Qingtian Wang
  */
-@Slf4j
 public final class ChunkStitcher implements Stitcher {
-
     private static final long DEFAULT_MAX_CHUNK_GROUP_COUNT = Long.MAX_VALUE;
     private static final long DEFAULT_MAX_STITCH_TIME_NANOS = Long.MAX_VALUE;
-
+    private static final Logger log = Logger.instance(ChunkStitcher.class);
     private final Cache<UUID, Set<Chunk>> chunkGroups;
     private final Duration maxStitchTime;
     private final Long maxGroups;
@@ -57,6 +55,10 @@ public final class ChunkStitcher implements Stitcher {
                 .build();
     }
 
+    private static int getTotalByteSize(@NonNull Set<Chunk> group) {
+        return group.stream().mapToInt(chunk -> chunk.getBytes().length).sum();
+    }
+
     private static byte[] stitchAll(Set<Chunk> group) {
         byte[] groupBytes = new byte[getTotalByteSize(group)];
         List<Chunk> orderedGroup = new ArrayList<>(group);
@@ -70,10 +72,6 @@ public final class ChunkStitcher implements Stitcher {
         }
         log.atDebug().log("stitched all [{}] chunks in group [{}]", group.size(), orderedGroup.get(0).getGroupId());
         return groupBytes;
-    }
-
-    private static int getTotalByteSize(@NonNull Set<Chunk> group) {
-        return group.stream().mapToInt(chunk -> chunk.getBytes().length).sum();
     }
 
     @Override
