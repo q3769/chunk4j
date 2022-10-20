@@ -128,7 +128,7 @@
         <dependency>
             <groupId>io.github.elf4j</groupId>
             <artifactId>elf4j-log4j</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.3</version>
             <scope>test</scope>
         </dependency>
         <!--        <dependency>-->
