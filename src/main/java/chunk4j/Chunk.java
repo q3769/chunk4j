@@ -26,6 +26,7 @@ package chunk4j;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -71,5 +72,5 @@ public class Chunk implements Serializable {
      * Data bytes chopped for this current chunk to hold. Every chunk in the group should hold bytes of size equal to
      * the chunk's full capacity except maybe the last one in the group.
      */
-    byte[] bytes;
+    @ToString.Exclude byte[] bytes;
 }
