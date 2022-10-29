@@ -95,12 +95,7 @@ in the same group representing the original data unit.
 ```
 public class Chunk implements Serializable {
 
-    private static final long serialVersionUID = 0L;
-
-    /**
-     * Maximum bytes of data a chunk can hold.
-     */
-    int byteCapacity;
+    private static final long serialVersionUID = 42L;
 
     /**
      * The group ID of the original data blob. All chunks in the same group share the same group ID.
@@ -122,8 +117,7 @@ public class Chunk implements Serializable {
     int groupSize;
 
     /**
-     * Data bytes chopped for this current chunk to hold. Every chunk in the group should hold bytes of size equal to
-     * the chunk's full capacity except maybe the last one in the group.
+     * Data bytes chopped for this current chunk to hold. 
      */
     byte[] bytes;
 }
