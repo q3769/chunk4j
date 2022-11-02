@@ -238,7 +238,7 @@ and the chop-n-stitch mechanism only needs to kick in when, occasionally, the do
 chunk's capacity.
 
 *Note: chunk4j works on the application layer of the network (Layer 7). There is a fixed-size overhead between a chunk's
-byte size capacity (`Chunk.getByteCapacity()`) and the overall size of the entire chunk that is transported by a
+byte size capacity and the overall size of the entire chunk that is transported by a
 message. Take that and all other overheads into account when designing to keep the **overall** message size under the
 transport limit.*
 
