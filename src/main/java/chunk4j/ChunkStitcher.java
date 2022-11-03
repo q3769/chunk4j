@@ -76,7 +76,7 @@ public final class ChunkStitcher implements Stitcher {
 
     @Override
     public Optional<byte[]> stitch(Chunk chunk) {
-        log.atTrace().log("received: {}", chunk);
+        log.atTrace().log(() -> "received: " + chunk);
         final UUID groupId = chunk.getGroupId();
         CompleteGroupHolder completeGroupHolder = new CompleteGroupHolder();
         chunkGroups.asMap().compute(groupId, (gid, group) -> {
