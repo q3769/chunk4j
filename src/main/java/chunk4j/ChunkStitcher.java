@@ -88,18 +88,22 @@ public final class ChunkStitcher implements Stitcher {
             }
             int received = group.size();
             int expected = chunk.getGroupSize();
+            Logger debug = log.atDebug();
             if (received != expected) {
-                log.atDebug()
-                        .log("received [{}] chunks while expecting [{}], keeping group [{}] in cache",
-                                received,
-                                expected,
-                                groupId);
-                return group;
-            }
-            log.atDebug()
-                    .log("received all [{}] expected chunks, starting to stitch and restore original data and evicting group [{}] from cache",
+                if (debug.isEnabled()) {
+                    debug.log("received [{}] chunks while expecting [{}], keeping group [{}] in cache",
+                            received,
                             expected,
                             groupId);
+                }
+                return group;
+            }
+            if (debug.isEnabled()) {
+                debug.log(
+                        "received all [{}] expected chunks, starting to stitch and restore original data and evicting group [{}] from cache",
+                        expected,
+                        groupId);
+            }
             completeGroupHolder.setCompleteGroupOfChunks(group);
             return null;
         });
