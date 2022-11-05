@@ -37,17 +37,21 @@ import java.util.*;
  * @author Qingtian Wang
  */
 public final class ChunkStitcher implements Stitcher {
+    public static final boolean DEFAULT_VERIFY_BEFORE_STITCH = false;
     private static final long DEFAULT_MAX_CHUNK_GROUP_COUNT = Long.MAX_VALUE;
     private static final long DEFAULT_MAX_STITCH_TIME_NANOS = Long.MAX_VALUE;
     private static final Logger log = Logger.instance(ChunkStitcher.class);
     private final Cache<UUID, Set<Chunk>> chunkGroups;
     private final Duration maxStitchTime;
     private final Long maxGroups;
+    private final boolean verifyBeforeStitch;
 
     private ChunkStitcher(Builder builder) {
         maxStitchTime =
                 builder.maxStitchTime == null ? Duration.ofNanos(DEFAULT_MAX_STITCH_TIME_NANOS) : builder.maxStitchTime;
         maxGroups = builder.maxGroups == null ? DEFAULT_MAX_CHUNK_GROUP_COUNT : builder.maxGroups;
+        verifyBeforeStitch =
+                builder.verifyBeforeStitch == null ? DEFAULT_VERIFY_BEFORE_STITCH : builder.verifyBeforeStitch;
         this.chunkGroups = Caffeine.newBuilder()
                 .expireAfter(new SinceCreation(maxStitchTime))
                 .maximumSize(maxGroups)
@@ -59,26 +63,38 @@ public final class ChunkStitcher implements Stitcher {
         return group.stream().mapToInt(chunk -> chunk.getBytes().length).sum();
     }
 
-    private static byte[] stitchAll(Set<Chunk> group) {
+    private byte[] stitchAll(@NonNull Set<Chunk> group) {
+        verifyStitchability(group);
         byte[] groupBytes = new byte[getTotalByteSize(group)];
         List<Chunk> orderedGroup = new ArrayList<>(group);
         orderedGroup.sort(Comparator.comparingInt(Chunk::getIndex));
         int groupBytesPosition = 0;
         for (Chunk chunk : orderedGroup) {
             byte[] chunkBytes = chunk.getBytes();
-            final int chunkBytesLength = chunkBytes.length;
-            System.arraycopy(chunkBytes, 0, groupBytes, groupBytesPosition, chunkBytesLength);
-            groupBytesPosition += chunkBytesLength;
+            System.arraycopy(chunkBytes, 0, groupBytes, groupBytesPosition, chunkBytes.length);
+            groupBytesPosition += chunkBytes.length;
         }
         log.atDebug().log("stitched all [{}] chunks in group [{}]", group.size(), orderedGroup.get(0).getGroupId());
         return groupBytes;
     }
 
+    private void verifyStitchability(@NonNull Set<Chunk> group) {
+        if (!this.verifyBeforeStitch) {
+            return;
+        }
+        int groupSize = group.size();
+        UUID groupId = group.stream().findAny().orElseThrow(NoSuchElementException::new).getGroupId();
+        if (group.stream()
+                .anyMatch(chunk -> !chunk.getGroupId().equals(groupId) || chunk.getGroupSize() != groupSize)) {
+            throw new IllegalArgumentException("mismatched group id or size found in chunk");
+        }
+    }
+
     @Override
-    public Optional<byte[]> stitch(Chunk chunk) {
+    public Optional<byte[]> stitch(@NonNull Chunk chunk) {
         log.atTrace().log(() -> "received: " + chunk);
         final UUID groupId = chunk.getGroupId();
-        CompleteGroupHolder completeGroupHolder = new CompleteGroupHolder();
+        CompleteChunkGroupHolder completeChunkGroupHolder = new CompleteChunkGroupHolder();
         chunkGroups.asMap().compute(groupId, (gid, group) -> {
             if (group == null) {
                 group = new HashSet<>();
@@ -91,7 +107,8 @@ public final class ChunkStitcher implements Stitcher {
             Logger debug = log.atDebug();
             if (received != expected) {
                 if (debug.isEnabled()) {
-                    debug.log("received [{}] chunks while expecting [{}], keeping group [{}] in cache",
+                    debug.log(
+                            "received [{}] chunks while expecting [{}], keeping group [{}] in cache, not ready to stitch",
                             received,
                             expected,
                             groupId);
@@ -99,16 +116,15 @@ public final class ChunkStitcher implements Stitcher {
                 return group;
             }
             if (debug.isEnabled()) {
-                debug.log("received all [{}] expected chunks in group [{}]", expected, groupId);
+                debug.log("all [{}] expected chunks received, evicting group [{}] from cache, ready to stitch",
+                        expected,
+                        groupId);
             }
-            completeGroupHolder.setCompleteGroupOfChunks(group);
+            completeChunkGroupHolder.setCompleteGroupOfChunks(group);
             return null;
         });
-        Set<Chunk> groupChunks = completeGroupHolder.getCompleteGroupOfChunks();
-        if (groupChunks == null) {
-            return Optional.empty();
-        }
-        return Optional.of(stitchAll(groupChunks));
+        Set<Chunk> completeGroupOfChunks = completeChunkGroupHolder.getCompleteGroupOfChunks();
+        return completeGroupOfChunks == null ? Optional.empty() : Optional.of(stitchAll(completeGroupOfChunks));
     }
 
     private static class SinceCreation implements Expiry<UUID, Set<Chunk>> {
@@ -143,6 +159,8 @@ public final class ChunkStitcher implements Stitcher {
         private Duration maxStitchTime;
         private Long maxGroups;
 
+        private Boolean verifyBeforeStitch;
+
         /**
          * @param maxStitchTime max duration from the very first chunk received by the stitcher to the original data is
          *                      restored completely
@@ -162,6 +180,11 @@ public final class ChunkStitcher implements Stitcher {
             return this;
         }
 
+        public Builder verifyBeforeStitch(boolean verifyBeforeStitch) {
+            this.verifyBeforeStitch = verifyBeforeStitch;
+            return this;
+        }
+
         /**
          * @return chunk stitcher built
          */
@@ -171,8 +194,7 @@ public final class ChunkStitcher implements Stitcher {
     }
 
     @Data
-    private static class CompleteGroupHolder {
-
+    private static class CompleteChunkGroupHolder {
         Set<Chunk> completeGroupOfChunks;
     }
 
