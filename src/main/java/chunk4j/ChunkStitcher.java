@@ -65,17 +65,17 @@ public final class ChunkStitcher implements Stitcher {
 
     private byte[] stitchAll(@NonNull Set<Chunk> group) {
         verifyStitchability(group);
-        byte[] groupBytes = new byte[getTotalByteSize(group)];
+        byte[] stitchedBytes = new byte[getTotalByteSize(group)];
         List<Chunk> orderedGroup = new ArrayList<>(group);
         orderedGroup.sort(Comparator.comparingInt(Chunk::getIndex));
-        int groupBytesPosition = 0;
+        int chunkStartPosition = 0;
         for (Chunk chunk : orderedGroup) {
             byte[] chunkBytes = chunk.getBytes();
-            System.arraycopy(chunkBytes, 0, groupBytes, groupBytesPosition, chunkBytes.length);
-            groupBytesPosition += chunkBytes.length;
+            System.arraycopy(chunkBytes, 0, stitchedBytes, chunkStartPosition, chunkBytes.length);
+            chunkStartPosition += chunkBytes.length;
         }
         log.atDebug().log("stitched all [{}] chunks in group [{}]", group.size(), orderedGroup.get(0).getGroupId());
-        return groupBytes;
+        return stitchedBytes;
     }
 
     private void verifyStitchability(@NonNull Set<Chunk> group) {
