@@ -99,10 +99,7 @@ public final class ChunkStitcher implements Stitcher {
                 return group;
             }
             if (debug.isEnabled()) {
-                debug.log(
-                        "received all [{}] expected chunks, starting to stitch and restore original data and evicting group [{}] from cache",
-                        expected,
-                        groupId);
+                debug.log("received all [{}] expected chunks in group [{}]", expected, groupId);
             }
             completeGroupHolder.setCompleteGroupOfChunks(group);
             return null;
