@@ -29,12 +29,6 @@ Java 8 or better
 
 ## Use it...
 
-As a generic POJO API, chunk4j can be directly used in any Java client codebase. For better encapsulation, though,
-consider using chunk4j as a "lower level API". I.e. set up some simple wrapper/adapter mechanism such that the
-end-client codebase can be completely agnostic of the transport size limitation or the chunk4j API. Working with the
-higher-level wrapper interface, the end-client code only needs to be concerned with the original client-side business
-domain data (bytes or domain objects serializable to bytes).
-
 ### The Chopper
 
 #### API:
