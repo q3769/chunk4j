@@ -179,7 +179,7 @@ public class MessageConsumer {
 }
 ```
 
-The `stitch` method should be repeatedly called on all the chunks ever received. On each call and addition of the
+The `stitch` method should be repeatedly called on every chunk ever received by the Stitcher. On each such call and addition of the
 received chunk, if a meaningful group can form to complete and restore the original data blob in bytes, such bytes are
 returned inside an `Optional`; otherwise if the group is still "incomplete" even with the addition of this current
 chunk, then the `stitch` method returns an empty `Optional`. I.e. You keep calling the `stitch` method with each and
