@@ -119,7 +119,7 @@ public class Chunk implements Serializable {
 
 #### Usage example:
 
-chunk4j aims to handle most details of the `Chunk` behind the scenes of the `Chopper` and `Stitcher` API. For the API
+Chunk4J aims to handle most details of the `Chunk` behind the scenes of the `Chopper` and `Stitcher` API. For the API
 client, it suffices to know that `Chunk` is a simple POJO data holder; serializable, it carries the data bytes
 travelling from the `Chopper` to the `Stitcher`. To transport Chunks over the network from the Chopper to the Sticher,
 the API client simply needs to pack the Chunk into a transport-specific message on the Chopper's end, and unpack the
@@ -224,7 +224,7 @@ new ChunkStitcher.Builder().maxStitchTime(Duration.ofSeconds(5)).maxGroups(100).
 
 #### Chunk size/capacity
 
-chunk4j works on the application layer of the network (Layer 7). There is a small fixed-size overhead in addition to
+Chunk4J works on the application layer of the network (Layer 7). There is a small fixed-size overhead in addition to
 a chunk's byte size to serialize the entire Chunk object. Take all possible overheads into account when designing 
 to keep the **overall** message size under the transport limit.
 
