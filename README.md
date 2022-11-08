@@ -224,17 +224,9 @@ new ChunkStitcher.Builder().maxStitchTime(Duration.ofSeconds(5)).maxGroups(100).
 
 #### Chunk size/capacity
 
-When deciding the chunk's capacity, it may be beneficial to use the chop-n-stitch mechanism as a safety measure rather
-than the regular mode of delivery at run-time: "One ounce of prevention" may still be "worth a pound of cure". On the
-one hand, the chunk's capacity will need to be under the transport message size limit. On the other hand, try setting up
-the application and chunk capacity such that most domain data can be fit and transported in one single chunk/message,
-and the chop-n-stitch mechanism only needs to kick in when, occasionally, the domain data entry does go beyond the
-chunk's capacity.
-
-*Note: chunk4j works on the application layer of the network (Layer 7). There is a fixed-size overhead between a chunk's
-byte size capacity and the overall size of the entire chunk that is transported by a
-message. Take that and all other overheads into account when designing to keep the **overall** message size under the
-transport limit.*
+chunk4j works on the application layer of the network (Layer 7). There is a small fixed-size overhead in addition to
+a chunk's byte size to serialize the entire Chunk object. Take all possible overheads into account when designing 
+to keep the **overall** message size under the transport limit.
 
 #### Message acknowledgment/commit
 
