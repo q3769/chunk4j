@@ -54,22 +54,22 @@ public final class ChunkChopper implements Chopper {
 
     @Override
     public List<Chunk> chop(byte[] bytes) {
+        final List<Chunk> chunks = new ArrayList<>();
         final UUID groupId = UUID.randomUUID();
         final int groupSize = numberOfChunks(bytes);
-        final List<Chunk> group = new ArrayList<>();
         int chunkIndex = 0;
         for (int chunkBytesStart = 0; chunkBytesStart < bytes.length; chunkBytesStart += this.chunkCapacity) {
             int chunkBytesEnd = Math.min(bytes.length, chunkBytesStart + this.chunkCapacity);
             final byte[] chunkBytes = Arrays.copyOfRange(bytes, chunkBytesStart, chunkBytesEnd);
-            group.add(Chunk.builder()
+            chunks.add(Chunk.builder()
                     .groupId(groupId)
                     .groupSize(groupSize)
                     .index(chunkIndex++)
                     .bytes(chunkBytes)
                     .build());
         }
-        assert groupSize == group.size();
-        return group;
+        assert groupSize == chunks.size();
+        return chunks;
     }
 
     private int numberOfChunks(byte[] bytes) {
