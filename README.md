@@ -121,9 +121,9 @@ public class Chunk implements Serializable {
 
 Chunk4J aims to handle most details of the `Chunk` behind the scenes of the `Chopper` and `Stitcher` API. For the API
 client, it suffices to know that `Chunk` is a simple POJO data holder; serializable, it carries the data bytes
-travelling from the `Chopper` to the `Stitcher`. To transport Chunks over the network from the Chopper to the Sticher,
-the API client simply needs to pack the Chunk into a transport-specific message on the Chopper's end, and unpack the
-message back to a Chunk on the Stitcher's end, using the POJO marshal-unmarshal technique applicable to the transport.
+travelling from the `Chopper` to the `Stitcher`. To transport Chunks over the network, the API client simply needs to
+pack the Chunk into a transport-specific message on the Chopper's end, and unpack the message back to a Chunk on the
+Stitcher's end, using the POJO marshal-unmarshal technique applicable to the transport.
 
 ### The Stitcher
 
@@ -179,7 +179,8 @@ public class MessageConsumer {
 }
 ```
 
-The `stitch` method should be repeatedly called on every chunk ever received by the Stitcher. On each such call and addition of the
+The `stitch` method should be repeatedly called on every chunk ever received by the Stitcher. On each such call and
+addition of the
 received chunk, if a meaningful group can form to complete and restore the original data blob in bytes, such bytes are
 returned inside an `Optional`; otherwise if the group is still "incomplete" even with the addition of this current
 chunk, then the `stitch` method returns an empty `Optional`. I.e. You keep calling the `stitch` method with each and
@@ -225,7 +226,7 @@ new ChunkStitcher.Builder().maxStitchTime(Duration.ofSeconds(5)).maxGroups(100).
 #### Chunk size/capacity
 
 Chunk4J works on the application layer of the network (Layer 7). There is a small fixed-size overhead in addition to
-a chunk's byte size to serialize the entire Chunk object. Take all possible overheads into account when designing 
+a chunk's byte size to serialize the entire Chunk object. Take all possible overheads into account when designing
 to keep the **overall** message size under the transport limit.
 
 #### Message acknowledgment/commit
