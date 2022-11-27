@@ -33,7 +33,7 @@ Java 8 or better
 
 #### API:
 
-```
+```java
 public interface Chopper {
 
     /**
@@ -52,7 +52,7 @@ network node, the group of chunks can be collectively stitched back together to 
 
 #### Usage example:
 
-```
+```java
 public class MessageProducer {
 
     priviate Chopper chopper = ChunkChopper.ofChunkByteSize(1024); // each chopped off chunk holds up to 1024 bytes
@@ -86,7 +86,7 @@ in the same group representing the original data unit.
 
 #### API:
 
-```
+```java
 public class Chunk implements Serializable {
 
     private static final long serialVersionUID = 42L;
@@ -129,7 +129,7 @@ Stitcher's end, using the POJO marshal-unmarshal technique applicable to the tra
 
 #### API:
 
-```
+```java
 public interface Stitcher {
 
     /**
@@ -150,7 +150,7 @@ by this group can be stitched back together and restored.
 
 #### Usage example:
 
-```
+```java
 public class MessageConsumer {
 
     private Stitcher stitcher = new ChunkStitcher.Builder().build();    
@@ -196,7 +196,7 @@ restored and returned by the `stitch` method, the entire chunk group is evicted 
 By default, a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded
 no matter how much time has passed without being able to restore the group back to the original data unit:
 
-```
+```java
 new ChunkStitcher.Builder().build()
 ```
 
@@ -204,20 +204,20 @@ Both of those aspects, though, can be customized. The following stitcher will di
 time have passed since the stitcher was asked to stitch the very first chunk of the group, but hasn't received all the
 chunks needed to restore the whole group back to the original data unit:
 
-```
+```java
 new ChunkStitcher.Builder().maxStitchTime(Duration.ofSeonds(5)).build()
 ```
 
 This stitcher will discard some group(s) of chunks when there are more than 100 groups of original data pending
 restoration:
 
-```
+```java
 new ChunkStitcher.Builder().maxGroups(100).build()
 ```
 
 This stitcher is customized by a combination of both aspects:
 
-```
+```java
 new ChunkStitcher.Builder().maxStitchTime(Duration.ofSeconds(5)).maxGroups(100).build()
 ```
 
