@@ -30,12 +30,14 @@ import lombok.Data;
 import lombok.NonNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.ThreadSafe;
 import java.time.Duration;
 import java.util.*;
 
 /**
  * @author Qingtian Wang
  */
+@ThreadSafe
 public final class ChunkStitcher implements Stitcher {
     public static final boolean DEFAULT_VERIFY_BEFORE_STITCH = false;
     private static final long DEFAULT_MAX_CHUNK_GROUP_COUNT = Long.MAX_VALUE;

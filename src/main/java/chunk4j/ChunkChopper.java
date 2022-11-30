@@ -24,6 +24,7 @@
 
 package chunk4j;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.UUID;
 /**
  * @author Qingtian Wang
  */
+@ThreadSafe
 public final class ChunkChopper implements Chopper {
 
     private final int chunkCapacity;
