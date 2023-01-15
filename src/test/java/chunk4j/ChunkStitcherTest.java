@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 Qingtian Wang
+ * Copyright (c) 2021-2023 Qingtian Wang
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,30 +42,6 @@ class ChunkStitcherTest {
     static final int CHUNK_BYTE_SIZE = 10;
 
     @Nested
-    class maxStitchTime {
-
-        static final long TOTAL_STITCH_TIME_MILLIS = 500;
-
-        @Test
-        void lessThanNeeded() throws ExecutionException, InterruptedException {
-            List<Chunk> chunks = ChunkChopper.ofChunkByteSize(CHUNK_BYTE_SIZE).chop(BYTES);
-            long maxTimePerStitch = TOTAL_STITCH_TIME_MILLIS / chunks.size();
-            Duration lessThanNeededToStitchAll = Duration.ofMillis(TOTAL_STITCH_TIME_MILLIS - maxTimePerStitch);
-            ChunkStitcher tot = new ChunkStitcher.Builder().maxStitchTime(lessThanNeededToStitchAll).build();
-            Optional<byte[]> stitched = Optional.of(new byte[42]);
-
-            ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-            for (Chunk chunk : chunks) {
-                stitched = scheduledExecutorService.schedule(() -> tot.stitch(chunk),
-                        maxTimePerStitch,
-                        TimeUnit.MILLISECONDS).get();
-            }
-
-            assertFalse(stitched.isPresent(), "stitcher should have expired in [" + lessThanNeededToStitchAll + "]");
-        }
-    }
-
-    @Nested
     class maxGroups {
 
         @Test
@@ -94,6 +70,30 @@ class ChunkStitcherTest {
                     "stitched and restored items [" + allStitchedItems + "] should be less than original items ["
                             + originalDataItems + "] due to insufficient maxGroups [" + insufficientMaxGroups
                             + "] being too much less than original items");
+        }
+    }
+
+    @Nested
+    class maxStitchTime {
+
+        static final long TOTAL_STITCH_TIME_MILLIS = 500;
+
+        @Test
+        void lessThanNeeded() throws ExecutionException, InterruptedException {
+            List<Chunk> chunks = ChunkChopper.ofChunkByteSize(CHUNK_BYTE_SIZE).chop(BYTES);
+            long maxTimePerStitch = TOTAL_STITCH_TIME_MILLIS / chunks.size();
+            Duration lessThanNeededToStitchAll = Duration.ofMillis(TOTAL_STITCH_TIME_MILLIS - maxTimePerStitch);
+            ChunkStitcher tot = new ChunkStitcher.Builder().maxStitchTime(lessThanNeededToStitchAll).build();
+            Optional<byte[]> stitched = Optional.of(new byte[42]);
+
+            ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+            for (Chunk chunk : chunks) {
+                stitched = scheduledExecutorService.schedule(() -> tot.stitch(chunk),
+                        maxTimePerStitch,
+                        TimeUnit.MILLISECONDS).get();
+            }
+
+            assertFalse(stitched.isPresent(), "stitcher should have expired in [" + lessThanNeededToStitchAll + "]");
         }
     }
 }

@@ -18,8 +18,9 @@ Notes:
   allowed by the underlying transport in a distributed system. E.g. at the time of writing, the default message size
   limit is 256KB with [Amazon Simple Queue Service (SQS)](https://aws.amazon.com/sqs/) , and 1MB
   with [Apache Kafka](https://kafka.apache.org/); the default cache entry size limit is 1MB
-  for [Memcached](https://memcached.org/), and 512MB for [Redis](https://redis.io/). Even though those default transport
-  limits can be customized or configured, often times, the default is there for a sensible reason.
+  for [Memcached](https://memcached.org/), and 512MB for [Redis](https://redis.io/). Although the default transport
+  limits can be customized, often times, the default is there for a sensible reason, and it may be difficult to ensure
+  the data being transported never goes beyond the configured limit at run-time.
 
 ## Prerequisite
 
@@ -155,22 +156,20 @@ by this group can be stitched back together and restored.
 ```java
 public class MessageConsumer {
 
-    private Stitcher stitcher = new ChunkStitcher.Builder().build();    
-    
-    @Autowried
-    private DomainDataProcessor domainDataProcessor;
+    private Stitcher stitcher = new ChunkStitcher.Builder().build();
+
+    @Autowried private DomainDataProcessor domainDataProcessor;
         
         ...
-        
+
     /**
      * Suppose the run-time invocation of this method is managed by messaging provider/transport
      */
     public void onReceiving(Message message) {
         stitcher.stitch(toChunk(message))
-                .ifPresent(originalDomainDataBytes -> 
-                domainDataProcessor.process(new String(originalDomainDataBytes));
-    } 
-    
+                .ifPresent(originalDomainDataBytes -> domainDataProcessor.process(new String(originalDomainDataBytes));
+    }
+
     /**
      * unpack/deserialize/unmarshal the chunk POJO from the transport-specific message
      */
@@ -198,7 +197,7 @@ restored and returned by the `stitch` method, the entire chunk group is evicted 
 By default, a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded
 no matter how much time has passed without being able to restore the group back to the original data unit:
 
-```java
+```jshelllanguage
 new ChunkStitcher.Builder().build()
 ```
 
@@ -206,20 +205,20 @@ Both of those aspects, though, can be customized. The following stitcher will di
 time have passed since the stitcher was asked to stitch the very first chunk of the group, but hasn't received all the
 chunks needed to restore the whole group back to the original data unit:
 
-```java
+```jshelllanguage
 new ChunkStitcher.Builder().maxStitchTime(Duration.ofSeonds(5)).build()
 ```
 
 This stitcher will discard some group(s) of chunks when there are more than 100 groups of original data pending
 restoration:
 
-```java
+```jshelllanguage
 new ChunkStitcher.Builder().maxGroups(100).build()
 ```
 
 This stitcher is customized by a combination of both aspects:
 
-```java
+```jshelllanguage
 new ChunkStitcher.Builder().maxStitchTime(Duration.ofSeconds(5)).maxGroups(100).build()
 ```
 
