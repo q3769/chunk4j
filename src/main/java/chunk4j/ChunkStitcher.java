@@ -169,6 +169,11 @@ public final class ChunkStitcher implements Stitcher {
             return this;
         }
 
+        /**
+         * @param verifyBeforeStitch If true, verify all chunks have the same group id and size of the target group
+         *                           before stitching. Default false.
+         * @return the fluent builder
+         */
         public Builder verifyBeforeStitch(boolean verifyBeforeStitch) {
             this.verifyBeforeStitch = verifyBeforeStitch;
             return this;
