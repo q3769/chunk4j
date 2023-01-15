@@ -40,9 +40,9 @@ import java.util.function.Supplier;
  */
 @ThreadSafe
 public final class ChunkStitcher implements Stitcher {
-    public static final boolean DEFAULT_VERIFY_BEFORE_STITCH = false;
     private static final long DEFAULT_MAX_CHUNK_GROUP_COUNT = Long.MAX_VALUE;
     private static final long DEFAULT_MAX_STITCH_TIME_NANOS = Long.MAX_VALUE;
+    private static final boolean DEFAULT_VERIFY_BEFORE_STITCH = false;
     private static final Logger logger = Logger.instance();
     private final Cache<UUID, Set<Chunk>> chunkGroups;
     private final Long maxGroups;
@@ -80,21 +80,22 @@ public final class ChunkStitcher implements Stitcher {
             }
             int received = group.size();
             int expected = chunk.getGroupSize();
-            Logger debug = logger.atDebug();
-            if (received != expected) {
-                if (debug.isEnabled()) {
-                    debug.log(
-                            "received [{}] chunks while expecting [{}], keeping group [{}] in cache, not ready to stitch",
-                            received,
-                            expected,
-                            groupId);
+            if (received < expected) {
+                if (logger.atDebug().isEnabled()) {
+                    logger.atDebug()
+                            .log("received [{}] chunks while expecting [{}], keeping group [{}] in cache, not ready to stitch",
+                                    received,
+                                    expected,
+                                    groupId);
                 }
                 return group;
             }
-            if (debug.isEnabled()) {
-                debug.log("all [{}] expected chunks received, evicting group [{}] from cache, ready to stitch",
-                        expected,
-                        groupId);
+            assert received == expected;
+            if (logger.atDebug().isEnabled()) {
+                logger.atDebug()
+                        .log("all [{}] expected chunks received, evicting group [{}] from cache, ready to stitch",
+                                expected,
+                                groupId);
             }
             completeChunkGroupHolder.setCompleteGroupOfChunks(group);
             return null;
@@ -114,7 +115,10 @@ public final class ChunkStitcher implements Stitcher {
             System.arraycopy(chunkBytes, 0, stitchedBytes, chunkStartPosition, chunkBytes.length);
             chunkStartPosition += chunkBytes.length;
         }
-        logger.atDebug().log("stitched all [{}] chunks in group [{}]", group.size(), orderedGroup.get(0).getGroupId());
+        if (logger.atDebug().isEnabled()) {
+            logger.atDebug()
+                    .log("stitched all [{}] chunks in group [{}]", group.size(), orderedGroup.get(0).getGroupId());
+        }
         return stitchedBytes;
     }
 
