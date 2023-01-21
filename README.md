@@ -1,4 +1,4 @@
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.q3769/chunk4j.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.q3769%22%20AND%20a:%22chunk4j%22)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.q3769/chunk4j.svg?label=chunk4j)](https://search.maven.org/search?q=g:%22io.github.q3769%22%20AND%20a:%22chunk4j%22)
 
 # chunk4j
 
@@ -27,6 +27,8 @@ Notes:
 Java 8 or better
 
 ## Get it...
+
+Available at:
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.q3769/chunk4j.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.q3769%22%20AND%20a:%22chunk4j%22)
 
@@ -67,8 +69,7 @@ public class MessageProducer {
      * Sender method of business data
      */
     public void sendBusinessDomainData(String domainDataText) {
-        chopper.chop(domainDataText.getBytes())
-                .forEach((chunk) -> transport.send(toMessage(chunk));
+        chopper.chop(domainDataText.getBytes()).forEach((chunk) -> transport.send(toMessage(chunk)));
     }
 
     /**
@@ -97,16 +98,14 @@ public class Chunk implements Serializable {
     /**
      * The group ID of the original data blob. All chunks in the same group share the same group ID.
      */
-    @EqualsAndHashCode.Include
-    UUID groupId;
+    @EqualsAndHashCode.Include UUID groupId;
 
     /**
      * Ordered index at which this current chunk is positioned inside the group. Chunks are chopped off from the
      * original data bytes in sequential order, indexed as such, and assigned with the same group ID as all other chunks
      * in the group that represents the original data bytes.
      */
-    @EqualsAndHashCode.Include
-    int index;
+    @EqualsAndHashCode.Include int index;
 
     /**
      * Total number of chunks the original data blob is chopped to form the group.
@@ -156,7 +155,7 @@ by this group can be stitched back together and restored.
 ```java
 public class MessageConsumer {
 
-    private Stitcher stitcher = new ChunkStitcher.Builder().build();
+    private final Stitcher stitcher = new ChunkStitcher.Builder().build();
 
     @Autowried private DomainDataProcessor domainDataProcessor;
         
@@ -167,7 +166,7 @@ public class MessageConsumer {
      */
     public void onReceiving(Message message) {
         stitcher.stitch(toChunk(message))
-                .ifPresent(originalDomainDataBytes -> domainDataProcessor.process(new String(originalDomainDataBytes));
+                .ifPresent(originalDomainDataBytes -> domainDataProcessor.process(new String(originalDomainDataBytes)));
     }
 
     /**

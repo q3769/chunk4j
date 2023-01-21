@@ -45,7 +45,7 @@ public final class ChunkStitcher implements Stitcher {
     private static final boolean DEFAULT_VERIFY_BEFORE_STITCH = false;
     private static final Logger logger = Logger.instance();
     private final Cache<UUID, Set<Chunk>> chunkGroups;
-    private final Long maxGroups;
+    private final long maxGroups;
     private final Duration maxStitchTime;
     private final boolean verifyBeforeStitch;
 
