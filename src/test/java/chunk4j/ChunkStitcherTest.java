@@ -33,8 +33,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ChunkStitcherTest {
 
@@ -48,7 +47,7 @@ class ChunkStitcherTest {
         void lessThanNeeded() throws InterruptedException, ExecutionException {
             int originalDataItems = 1000;
             int insufficientMaxGroups = originalDataItems / 500;
-            ChunkStitcher tot = new ChunkStitcher.Builder().maxGroups(insufficientMaxGroups).build();
+            ChunkStitcher tot = new ChunkStitcher.Builder().maxStitchingGroups(insufficientMaxGroups).build();
             List<Chunk> chunksOfAllItems = new ArrayList<>();
             ChunkChopper chunkChopper = ChunkChopper.ofChunkByteSize(CHUNK_BYTE_SIZE);
             for (int i = 0; i < originalDataItems; i++) {
@@ -94,6 +93,24 @@ class ChunkStitcherTest {
             }
 
             assertFalse(stitched.isPresent(), "stitcher should have expired in [" + lessThanNeededToStitchAll + "]");
+        }
+    }
+
+    @Nested
+    class maxStitchingSize {
+
+        final int maxStitchingByteSize = BYTES.length / 2;
+
+        @Test
+        void exceedingMaxStitchingSize() {
+            ChunkStitcher tot = new ChunkStitcher.Builder().maxRestoreByteSize(maxStitchingByteSize).build();
+            List<Chunk> chunks = ChunkChopper.ofChunkByteSize(CHUNK_BYTE_SIZE).chop(BYTES);
+
+            assertThrows(IllegalArgumentException.class, () -> {
+                for (Chunk chunk : chunks) {
+                    tot.stitch(chunk);
+                }
+            });
         }
     }
 }

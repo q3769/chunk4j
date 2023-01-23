@@ -28,8 +28,11 @@ import com.github.benmanes.caffeine.cache.*;
 import elf4j.Logger;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.ToString;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.NotThreadSafe;
 import javax.annotation.concurrent.ThreadSafe;
 import java.time.Duration;
 import java.util.*;
@@ -40,97 +43,58 @@ import java.util.function.Supplier;
  */
 @ThreadSafe
 public final class ChunkStitcher implements Stitcher {
-    private static final long DEFAULT_MAX_CHUNK_GROUP_COUNT = Long.MAX_VALUE;
+    private static final int DEFAULT_MAX_RESTORE_BYTE_SIZE = Integer.MAX_VALUE;
+    private static final long DEFAULT_MAX_STITCHING_GROUPS = Long.MAX_VALUE;
     private static final long DEFAULT_MAX_STITCH_TIME_NANOS = Long.MAX_VALUE;
-    private static final boolean DEFAULT_VERIFY_BEFORE_STITCH = false;
     private static final Logger logger = Logger.instance();
-    private final Cache<UUID, Set<Chunk>> chunkGroups;
-    private final long maxGroups;
+    private final Cache<UUID, ChunkStitchingGroup> chunkGroups;
+    private final int maxRestoreByteSize;
     private final Duration maxStitchTime;
-    private final boolean verifyBeforeStitch;
+    private final long maxStitchingGroups;
 
-    private ChunkStitcher(Builder builder) {
-        maxStitchTime =
-                builder.maxStitchTime == null ? Duration.ofNanos(DEFAULT_MAX_STITCH_TIME_NANOS) : builder.maxStitchTime;
-        maxGroups = builder.maxGroups == null ? DEFAULT_MAX_CHUNK_GROUP_COUNT : builder.maxGroups;
-        verifyBeforeStitch =
-                builder.verifyBeforeStitch == null ? DEFAULT_VERIFY_BEFORE_STITCH : builder.verifyBeforeStitch;
+    private ChunkStitcher(@NonNull Builder builder) {
+        maxStitchTime = builder.maxStitchTime;
+        maxStitchingGroups = builder.maxStitchingGroups;
+        maxRestoreByteSize = builder.maxRestoreByteSize;
         this.chunkGroups = Caffeine.newBuilder()
                 .expireAfter(new SinceCreation(maxStitchTime))
-                .maximumSize(maxGroups)
+                .maximumSize(maxStitchingGroups)
                 .evictionListener(new InvoluntaryEvictionLogger())
                 .build();
     }
 
-    private static int getTotalByteSize(@NonNull Set<Chunk> group) {
-        return group.stream().mapToInt(chunk -> chunk.getBytes().length).sum();
+    private static Optional<byte[]> optionalOf(@Nullable byte[] bytes) {
+        return bytes == null ? Optional.empty() : Optional.of(bytes);
     }
 
     @Override
     public Optional<byte[]> stitch(@NonNull Chunk chunk) {
         logger.atTrace().log((Supplier) () -> "received: " + chunk);
         final UUID groupId = chunk.getGroupId();
-        CompleteChunkGroupHolder completeChunkGroupHolder = new CompleteChunkGroupHolder();
+        RestoredBytesHolder restoredBytesHolder = new RestoredBytesHolder();
         chunkGroups.asMap().compute(groupId, (gid, group) -> {
             if (group == null) {
-                group = new HashSet<>();
+                group = new ChunkStitchingGroup(chunk.getGroupId(), chunk.getGroupSize());
             }
-            if (!group.add(chunk)) {
-                logger.atWarn().log("received duplicate chunk: {}", chunk);
-            }
-            int received = group.size();
-            int expected = chunk.getGroupSize();
-            if (received < expected) {
-                if (logger.atDebug().isEnabled()) {
-                    logger.atDebug()
-                            .log("received [{}] chunks while expecting [{}], keeping group [{}] in cache, not ready to stitch",
-                                    received,
-                                    expected,
-                                    groupId);
-                }
-                return group;
-            }
-            assert received == expected;
-            if (logger.atDebug().isEnabled()) {
-                logger.atDebug()
-                        .log("all [{}] expected chunks received, evicting group [{}] from cache, ready to stitch",
-                                expected,
-                                groupId);
-            }
-            completeChunkGroupHolder.setCompleteGroupOfChunks(group);
-            return null;
+            checkStitchingGroupByteSize(chunk, group);
+            byte[] restoredBytes = group.addAndStitch(chunk);
+            restoredBytesHolder.setRestoredBytes(restoredBytes);
+            return restoredBytes == null ? group : null;
         });
-        Set<Chunk> completeGroupOfChunks = completeChunkGroupHolder.getCompleteGroupOfChunks();
-        return completeGroupOfChunks == null ? Optional.empty() : Optional.of(stitchAll(completeGroupOfChunks));
+        return optionalOf(restoredBytesHolder.getRestoredBytes());
     }
 
-    private byte[] stitchAll(@NonNull Set<Chunk> group) {
-        verifyStitchability(group);
-        byte[] stitchedBytes = new byte[getTotalByteSize(group)];
-        List<Chunk> orderedGroup = new ArrayList<>(group);
-        orderedGroup.sort(Comparator.comparingInt(Chunk::getIndex));
-        int chunkStartPosition = 0;
-        for (Chunk chunk : orderedGroup) {
-            byte[] chunkBytes = chunk.getBytes();
-            System.arraycopy(chunkBytes, 0, stitchedBytes, chunkStartPosition, chunkBytes.length);
-            chunkStartPosition += chunkBytes.length;
-        }
-        if (logger.atDebug().isEnabled()) {
-            logger.atDebug()
-                    .log("stitched all [{}] chunks in group [{}]", group.size(), orderedGroup.get(0).getGroupId());
-        }
-        return stitchedBytes;
-    }
-
-    private void verifyStitchability(@NonNull Set<Chunk> group) {
-        if (!this.verifyBeforeStitch) {
+    private void checkStitchingGroupByteSize(Chunk chunk, ChunkStitchingGroup group) {
+        if (maxRestoreByteSize == DEFAULT_MAX_RESTORE_BYTE_SIZE) {
             return;
         }
-        int groupSize = group.size();
-        UUID groupId = group.stream().findAny().orElseThrow(NoSuchElementException::new).getGroupId();
-        if (group.stream()
-                .anyMatch(chunk -> !chunk.getGroupId().equals(groupId) || chunk.getGroupSize() != groupSize)) {
-            throw new IllegalArgumentException("mismatched group id or size found in chunk");
+        if (chunk.getBytes().length + group.getCurrentGroupByteSize() > maxRestoreByteSize) {
+            logger.atWarn()
+                    .log("By adding {}, stitching group {} would have exceeded safe-guarding byte size {} for restore data",
+                            chunk,
+                            group.groupId,
+                            maxRestoreByteSize);
+            throw new IllegalArgumentException("Group restore data bytes exceeding configured max size");
         }
     }
 
@@ -138,10 +102,9 @@ public final class ChunkStitcher implements Stitcher {
      * The stitcher builder.
      */
     public static class Builder {
-
-        private Long maxGroups;
-        private Duration maxStitchTime;
-        private Boolean verifyBeforeStitch;
+        private int maxRestoreByteSize = DEFAULT_MAX_RESTORE_BYTE_SIZE;
+        private Duration maxStitchTime = Duration.ofNanos(DEFAULT_MAX_STITCH_TIME_NANOS);
+        private long maxStitchingGroups = DEFAULT_MAX_STITCHING_GROUPS;
 
         /**
          * @return chunk stitcher built
@@ -151,11 +114,12 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         /**
-         * @param maxGroups max number of pending stitch groups. These groups will take up memory at runtime.
-         * @return the fluent builder
+         * @param v Optional safeguard against excessive large size of target restore data - either by mistake or
+         *          malicious attack. Default to no size limit.
+         * @return same builder instance
          */
-        public Builder maxGroups(long maxGroups) {
-            this.maxGroups = maxGroups;
+        public Builder maxRestoreByteSize(int v) {
+            this.maxRestoreByteSize = v;
             return this;
         }
 
@@ -170,22 +134,78 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         /**
-         * @param verifyBeforeStitch If true, verify all chunks have the same group id and size of the target group
-         *                           before stitching. Default false.
+         * @param maxGroups max number of pending stitch groups. These groups will take up memory at runtime.
          * @return the fluent builder
          */
-        public Builder verifyBeforeStitch(boolean verifyBeforeStitch) {
-            this.verifyBeforeStitch = verifyBeforeStitch;
+        public Builder maxStitchingGroups(long maxGroups) {
+            this.maxStitchingGroups = maxGroups;
             return this;
         }
     }
 
-    @Data
-    private static class CompleteChunkGroupHolder {
-        Set<Chunk> completeGroupOfChunks;
+    @NotThreadSafe
+    @ToString
+    private static class ChunkStitchingGroup {
+        private final Set<Chunk> chunks = new HashSet<>();
+        private final UUID groupId;
+        private final int targetChunkTotal;
+
+        ChunkStitchingGroup(UUID groupId, int targetChunkTotal) {
+            this.groupId = groupId;
+            this.targetChunkTotal = targetChunkTotal;
+        }
+
+        @Nullable
+        public byte[] addAndStitch(Chunk chunk) {
+            if (!chunk.getGroupId().equals(groupId) || chunk.getGroupSize() != getTargetChunkTotal()) {
+                logger.atWarn().log("Mismatched chunk {} cannot be added to group {}", chunk, this);
+                throw new IllegalArgumentException("Mismatch while adding chunk to corresponding group");
+            }
+            if (!chunks.add(chunk)) {
+                logger.atWarn().log("Duplicate chunk {} received and ignored", chunk);
+                return null;
+            }
+            if (getCurrentChunkTotal() == getTargetChunkTotal()) {
+                return this.stitchAll();
+            }
+            return null;
+        }
+
+        int getCurrentChunkTotal() {
+            return chunks.size();
+        }
+
+        int getCurrentGroupByteSize() {
+            return chunks.stream().mapToInt(chunk -> chunk.getBytes().length).sum();
+        }
+
+        int getTargetChunkTotal() {
+            return targetChunkTotal;
+        }
+
+        private byte[] stitchAll() {
+            if (logger.atDebug().isEnabled()) {
+                logger.atDebug().log("Stitching all [{}] chunks in group [{}]...", chunks.size(), groupId);
+            }
+            byte[] stitchedBytes = new byte[getCurrentGroupByteSize()];
+            List<Chunk> orderedGroup = new ArrayList<>(chunks);
+            orderedGroup.sort(Comparator.comparingInt(Chunk::getIndex));
+            int chunkStartPosition = 0;
+            for (Chunk chunk : orderedGroup) {
+                byte[] chunkBytes = chunk.getBytes();
+                System.arraycopy(chunkBytes, 0, stitchedBytes, chunkStartPosition, chunkBytes.length);
+                chunkStartPosition += chunkBytes.length;
+            }
+            return stitchedBytes;
+        }
     }
 
-    private static class SinceCreation implements Expiry<UUID, Set<Chunk>> {
+    @Data
+    private static class RestoredBytesHolder {
+        @Nullable byte[] restoredBytes;
+    }
+
+    private static class SinceCreation implements Expiry<UUID, ChunkStitchingGroup> {
 
         private final Duration duration;
 
@@ -194,13 +214,15 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         @Override
-        public long expireAfterCreate(@NonNull UUID uuid, @NonNull Set<Chunk> chunks, long currentTime) {
+        public long expireAfterCreate(@NonNull UUID uuid,
+                @NonNull ChunkStitcher.ChunkStitchingGroup chunks,
+                long currentTime) {
             return duration.toNanos();
         }
 
         @Override
         public long expireAfterUpdate(@NonNull UUID uuid,
-                @NonNull Set<Chunk> chunks,
+                @NonNull ChunkStitcher.ChunkStitchingGroup chunks,
                 long currentTime,
                 long currentDuration) {
             return currentDuration;
@@ -208,31 +230,31 @@ public final class ChunkStitcher implements Stitcher {
 
         @Override
         public long expireAfterRead(@NonNull UUID uuid,
-                @NonNull Set<Chunk> chunks,
+                @NonNull ChunkStitcher.ChunkStitchingGroup chunks,
                 long currentTime,
                 long currentDuration) {
             return currentDuration;
         }
     }
 
-    private class InvoluntaryEvictionLogger implements RemovalListener<UUID, Set<Chunk>> {
+    private class InvoluntaryEvictionLogger implements RemovalListener<UUID, ChunkStitchingGroup> {
 
         @Override
-        public void onRemoval(UUID groupId, Set<Chunk> chunks, @Nonnull RemovalCause cause) {
+        public void onRemoval(UUID groupId, ChunkStitchingGroup chunkStitchingGroup, @Nonnull RemovalCause cause) {
             switch (cause) {
                 case EXPIRED:
                     logger.atWarn()
                             .log("chunk group [{}] took too long to stitch and expired after [{}], expecting [{}] chunks but only received [{}] when expired",
                                     groupId,
                                     maxStitchTime,
-                                    chunks.stream().findFirst().orElseThrow(NoSuchElementException::new).getGroupSize(),
-                                    chunks.size());
+                                    chunkStitchingGroup.getTargetChunkTotal(),
+                                    chunkStitchingGroup.getCurrentChunkTotal());
                     break;
                 case SIZE:
                     logger.atWarn()
                             .log("chunk group [{}] was removed due to exceeding max group count [{}]",
                                     groupId,
-                                    maxGroups);
+                                    maxStitchingGroups);
                     break;
                 case EXPLICIT:
                 case REPLACED:

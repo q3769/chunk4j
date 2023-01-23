@@ -212,13 +212,13 @@ This stitcher will discard some group(s) of chunks when there are more than 100 
 restoration:
 
 ```jshelllanguage
-new ChunkStitcher.Builder().maxGroups(100).build()
+new ChunkStitcher.Builder().maxStitchingGroups(100).build()
 ```
 
 This stitcher is customized by a combination of both aspects:
 
 ```jshelllanguage
-new ChunkStitcher.Builder().maxStitchTime(Duration.ofSeconds(5)).maxGroups(100).build()
+new ChunkStitcher.Builder().maxStitchTime(Duration.ofSeconds(5)).maxStitchingGroups(100).build()
 ```
 
 ### Hints on using chunk4j API in messaging
