@@ -34,6 +34,8 @@ Available at:
 
 ## Use it...
 
+- The chunk4j API is thread-safe.
+
 ### The Chopper
 
 #### API:
