@@ -271,9 +271,6 @@ public final class ChunkStitcher implements Stitcher {
                 case EXPLICIT:
                 case REPLACED:
                 case COLLECTED:
-                    break;
-                default:
-                    throw new AssertionError("Unexpected eviction cause: " + cause.name());
             }
         }
     }
