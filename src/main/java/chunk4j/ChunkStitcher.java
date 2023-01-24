@@ -271,6 +271,8 @@ public final class ChunkStitcher implements Stitcher {
                 case EXPLICIT:
                 case REPLACED:
                 case COLLECTED:
+                default:
+                    break;
             }
         }
     }
