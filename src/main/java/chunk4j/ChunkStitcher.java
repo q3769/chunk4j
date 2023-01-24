@@ -78,17 +78,17 @@ public final class ChunkStitcher implements Stitcher {
     @Override
     public Optional<byte[]> stitch(@NonNull Chunk chunk) {
         logger.atTrace().log((Supplier) () -> "Received: " + chunk);
-        RestoredBytesHolder restoredBytesHolder = new RestoredBytesHolder();
+        StitchedBytesHolder stitchedBytesHolder = new StitchedBytesHolder();
         chunkGroups.asMap().compute(chunk.getGroupId(), (k, group) -> {
             if (group == null) {
                 group = new ChunkStitchingGroup(chunk.getGroupSize());
             }
             checkStitchingGroupByteSize(chunk, group);
-            byte[] restoredBytes = group.addAndStitch(chunk);
-            restoredBytesHolder.setRestoredBytes(restoredBytes);
-            return restoredBytes == null ? group : null;
+            byte[] stitchedBytes = group.addAndStitch(chunk);
+            stitchedBytesHolder.setStitchedBytes(stitchedBytes);
+            return stitchedBytes == null ? group : null;
         });
-        return optionalOf(restoredBytesHolder.getRestoredBytes());
+        return optionalOf(stitchedBytesHolder.getStitchedBytes());
     }
 
     private void checkStitchingGroupByteSize(Chunk chunk, ChunkStitchingGroup group) {
@@ -212,11 +212,6 @@ public final class ChunkStitcher implements Stitcher {
         }
     }
 
-    @Data
-    private static class RestoredBytesHolder {
-        @Nullable byte[] restoredBytes;
-    }
-
     private static class SinceCreation implements Expiry<UUID, ChunkStitchingGroup> {
 
         private final Duration duration;
@@ -247,6 +242,11 @@ public final class ChunkStitcher implements Stitcher {
                 long currentDuration) {
             return currentDuration;
         }
+    }
+
+    @Data
+    private static class StitchedBytesHolder {
+        @Nullable byte[] stitchedBytes;
     }
 
     private class InvoluntaryEvictionLogger implements RemovalListener<UUID, ChunkStitchingGroup> {
