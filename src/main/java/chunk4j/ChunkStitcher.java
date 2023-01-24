@@ -97,11 +97,11 @@ public final class ChunkStitcher implements Stitcher {
         }
         if (chunk.getBytes().length + group.getCurrentGroupByteSize() > maxStitchedByteSize) {
             logger.atWarn()
-                    .log("By adding {}, stitching group {} would have exceeded safe-guarding byte size {} for restore data",
+                    .log("By adding {}, stitching group {} would have exceeded safe-guarding byte size {}",
                             chunk,
                             chunk.getGroupId(),
                             maxStitchedByteSize);
-            throw new IllegalArgumentException("Group restore data bytes exceeding configured max size");
+            throw new IllegalArgumentException("Stitched bytes in group exceeding configured max size");
         }
     }
 
