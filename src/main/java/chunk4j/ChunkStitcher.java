@@ -44,19 +44,19 @@ import java.util.stream.Collectors;
  */
 @ThreadSafe
 public final class ChunkStitcher implements Stitcher {
-    private static final int DEFAULT_MAX_RESTORE_BYTE_SIZE = Integer.MAX_VALUE;
+    private static final int DEFAULT_MAX_STITCHED_BYTE_SIZE = Integer.MAX_VALUE;
     private static final long DEFAULT_MAX_STITCHING_GROUPS = Long.MAX_VALUE;
     private static final long DEFAULT_MAX_STITCH_TIME_NANOS = Long.MAX_VALUE;
     private static final Logger logger = Logger.instance();
     private final Cache<UUID, ChunkStitchingGroup> chunkGroups;
-    private final int maxRestoreByteSize;
     private final Duration maxStitchTime;
+    private final int maxStitchedByteSize;
     private final long maxStitchingGroups;
 
     private ChunkStitcher(@NonNull Builder builder) {
         maxStitchTime = builder.maxStitchTime;
         maxStitchingGroups = builder.maxStitchingGroups;
-        maxRestoreByteSize = builder.maxRestoreByteSize;
+        maxStitchedByteSize = builder.maxStitchedByteSize;
         this.chunkGroups = Caffeine.newBuilder()
                 .expireAfter(new SinceCreation(maxStitchTime))
                 .maximumSize(maxStitchingGroups)
@@ -92,15 +92,15 @@ public final class ChunkStitcher implements Stitcher {
     }
 
     private void checkStitchingGroupByteSize(Chunk chunk, ChunkStitchingGroup group) {
-        if (maxRestoreByteSize == DEFAULT_MAX_RESTORE_BYTE_SIZE) {
+        if (maxStitchedByteSize == DEFAULT_MAX_STITCHED_BYTE_SIZE) {
             return;
         }
-        if (chunk.getBytes().length + group.getCurrentGroupByteSize() > maxRestoreByteSize) {
+        if (chunk.getBytes().length + group.getCurrentGroupByteSize() > maxStitchedByteSize) {
             logger.atWarn()
                     .log("By adding {}, stitching group {} would have exceeded safe-guarding byte size {} for restore data",
                             chunk,
                             chunk.getGroupId(),
-                            maxRestoreByteSize);
+                            maxStitchedByteSize);
             throw new IllegalArgumentException("Group restore data bytes exceeding configured max size");
         }
     }
@@ -109,8 +109,8 @@ public final class ChunkStitcher implements Stitcher {
      * The stitcher builder.
      */
     public static class Builder {
-        private int maxRestoreByteSize = DEFAULT_MAX_RESTORE_BYTE_SIZE;
         private Duration maxStitchTime = Duration.ofNanos(DEFAULT_MAX_STITCH_TIME_NANOS);
+        private int maxStitchedByteSize = DEFAULT_MAX_STITCHED_BYTE_SIZE;
         private long maxStitchingGroups = DEFAULT_MAX_STITCHING_GROUPS;
 
         /**
@@ -121,22 +121,22 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         /**
-         * @param v Optional safeguard against excessive large size of target restore data - either by mistake or
-         *          malicious attack. Default to no size limit.
-         * @return same builder instance
-         */
-        public Builder maxRestoreByteSize(int v) {
-            this.maxRestoreByteSize = v;
-            return this;
-        }
-
-        /**
          * @param maxStitchTime max duration from the very first chunk received by the stitcher to the original data is
          *                      restored completely
          * @return the fluent builder
          */
         public Builder maxStitchTime(Duration maxStitchTime) {
             this.maxStitchTime = maxStitchTime;
+            return this;
+        }
+
+        /**
+         * @param v Optional safeguard against excessive large size of target restore data - either by mistake or
+         *          malicious attack. Default to no size limit.
+         * @return same builder instance
+         */
+        public Builder maxStitchedByteSize(int v) {
+            this.maxStitchedByteSize = v;
             return this;
         }
 

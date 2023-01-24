@@ -99,11 +99,11 @@ class ChunkStitcherTest {
     @Nested
     class maxStitchingSize {
 
-        final int maxStitchingByteSize = BYTES.length / 2;
+        final int maxStitchedByteSize = BYTES.length / 2;
 
         @Test
         void exceedingMaxStitchingSize() {
-            ChunkStitcher tot = new ChunkStitcher.Builder().maxRestoreByteSize(maxStitchingByteSize).build();
+            ChunkStitcher tot = new ChunkStitcher.Builder().maxStitchedByteSize(maxStitchedByteSize).build();
             List<Chunk> chunks = ChunkChopper.ofChunkByteSize(CHUNK_BYTE_SIZE).chop(BYTES);
 
             assertThrows(IllegalArgumentException.class, () -> {
