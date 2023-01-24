@@ -37,8 +37,9 @@ public interface Stitcher {
      *              together and returned. Otherwise, if the chunk group still hasn't gathered all the chunks needed,
      *              even with the addition of this chunk, then the whole group will be kept around, waiting for the
      *              missing chunk(s) to arrive.
-     * @return Optional non-empty and contains the original data blob restored by stitching if the input chunk is the
-     *         last missing piece of the entire chunk group representing the original data; empty otherwise.
+     * @return non-empty <code>Optional</code> containing the original data blob restored by the stitcher if the input
+     *         chunk is the last missing piece of the entire chunk group representing the original data; otherwise, if
+     *         the input chunk is not the last one expected, empty <code>Optional</code>.
      */
     Optional<byte[]> stitch(Chunk chunk);
 }

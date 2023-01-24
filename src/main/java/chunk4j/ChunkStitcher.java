@@ -37,6 +37,7 @@ import javax.annotation.concurrent.ThreadSafe;
 import java.time.Duration;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * @author Qingtian Wang
@@ -67,14 +68,20 @@ public final class ChunkStitcher implements Stitcher {
         return bytes == null ? Optional.empty() : Optional.of(bytes);
     }
 
+    /**
+     * @param chunk to be added to its corresponding chunk group, possibly stitched to restore the original data bytes
+     *              if this is the last chunk the group is expecting.
+     * @return non-empty <code>Optional</code> containing the original data bytes restored by the stitcher if the input
+     *         chunk is the last missing piece of the entire chunk group representing the original data; otherwise, if
+     *         the input chunk is not the last one expected, empty <code>Optional</code>.
+     */
     @Override
     public Optional<byte[]> stitch(@NonNull Chunk chunk) {
-        logger.atTrace().log((Supplier) () -> "received: " + chunk);
-        final UUID groupId = chunk.getGroupId();
+        logger.atTrace().log((Supplier) () -> "Received: " + chunk);
         RestoredBytesHolder restoredBytesHolder = new RestoredBytesHolder();
-        chunkGroups.asMap().compute(groupId, (gid, group) -> {
+        chunkGroups.asMap().compute(chunk.getGroupId(), (k, group) -> {
             if (group == null) {
-                group = new ChunkStitchingGroup(chunk.getGroupId(), chunk.getGroupSize());
+                group = new ChunkStitchingGroup(chunk.getGroupSize());
             }
             checkStitchingGroupByteSize(chunk, group);
             byte[] restoredBytes = group.addAndStitch(chunk);
@@ -92,7 +99,7 @@ public final class ChunkStitcher implements Stitcher {
             logger.atWarn()
                     .log("By adding {}, stitching group {} would have exceeded safe-guarding byte size {} for restore data",
                             chunk,
-                            group.groupId,
+                            chunk.getGroupId(),
                             maxRestoreByteSize);
             throw new IllegalArgumentException("Group restore data bytes exceeding configured max size");
         }
@@ -147,26 +154,47 @@ public final class ChunkStitcher implements Stitcher {
     @ToString
     private static class ChunkStitchingGroup {
         private final Set<Chunk> chunks = new HashSet<>();
-        private final UUID groupId;
-        private final int targetChunkTotal;
+        private final int expectedChunkTotal;
 
-        ChunkStitchingGroup(UUID groupId, int targetChunkTotal) {
-            this.groupId = groupId;
-            this.targetChunkTotal = targetChunkTotal;
+        ChunkStitchingGroup(int expectedChunkTotal) {
+            this.expectedChunkTotal = expectedChunkTotal;
         }
 
+        private static List<Chunk> sorted(Set<Chunk> chunks) {
+            return chunks.stream().sorted(Comparator.comparingInt(Chunk::getIndex)).collect(Collectors.toList());
+        }
+
+        @Nonnull
+        private static byte[] stitchToBytes(@NonNull Set<Chunk> chunks) {
+            byte[] stitchedBytes = new byte[totalByteSizeOf(chunks)];
+            int chunkStartPosition = 0;
+            for (Chunk chunk : sorted(chunks)) {
+                byte[] chunkBytes = chunk.getBytes();
+                System.arraycopy(chunkBytes, 0, stitchedBytes, chunkStartPosition, chunkBytes.length);
+                chunkStartPosition += chunkBytes.length;
+            }
+            return stitchedBytes;
+        }
+
+        private static int totalByteSizeOf(@NonNull Collection<Chunk> chunks) {
+            return chunks.stream().mapToInt(chunk -> chunk.getBytes().length).sum();
+        }
+
+        /**
+         * @param chunk to be added in the stitching group, possibly stitched if this is the last chunk the group is
+         *              expecting.
+         * @return the bytes by stitching together all the chunks in the group if the passed-in chunk is the last one
+         *         the group is expecting; otherwise, <code>null</code>.
+         */
         @Nullable
         public byte[] addAndStitch(Chunk chunk) {
-            if (!chunk.getGroupId().equals(groupId) || chunk.getGroupSize() != getTargetChunkTotal()) {
-                logger.atWarn().log("Mismatched chunk {} cannot be added to group {}", chunk, this);
-                throw new IllegalArgumentException("Mismatch while adding chunk to corresponding group");
-            }
             if (!chunks.add(chunk)) {
                 logger.atWarn().log("Duplicate chunk {} received and ignored", chunk);
                 return null;
             }
-            if (getCurrentChunkTotal() == getTargetChunkTotal()) {
-                return this.stitchAll();
+            if (getCurrentChunkTotal() == getExpectedChunkTotal()) {
+                logger.atDebug().log((Supplier) () -> "Stitching all " + chunks.size() + " chunks in group " + this);
+                return stitchToBytes(chunks);
             }
             return null;
         }
@@ -176,27 +204,11 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         int getCurrentGroupByteSize() {
-            return chunks.stream().mapToInt(chunk -> chunk.getBytes().length).sum();
+            return totalByteSizeOf(chunks);
         }
 
-        int getTargetChunkTotal() {
-            return targetChunkTotal;
-        }
-
-        private byte[] stitchAll() {
-            if (logger.atDebug().isEnabled()) {
-                logger.atDebug().log("Stitching all [{}] chunks in group [{}]...", chunks.size(), groupId);
-            }
-            byte[] stitchedBytes = new byte[getCurrentGroupByteSize()];
-            List<Chunk> orderedGroup = new ArrayList<>(chunks);
-            orderedGroup.sort(Comparator.comparingInt(Chunk::getIndex));
-            int chunkStartPosition = 0;
-            for (Chunk chunk : orderedGroup) {
-                byte[] chunkBytes = chunk.getBytes();
-                System.arraycopy(chunkBytes, 0, stitchedBytes, chunkStartPosition, chunkBytes.length);
-                chunkStartPosition += chunkBytes.length;
-            }
-            return stitchedBytes;
+        int getExpectedChunkTotal() {
+            return expectedChunkTotal;
         }
     }
 
@@ -247,7 +259,7 @@ public final class ChunkStitcher implements Stitcher {
                             .log("chunk group [{}] took too long to stitch and expired after [{}], expecting [{}] chunks but only received [{}] when expired",
                                     groupId,
                                     maxStitchTime,
-                                    chunkStitchingGroup.getTargetChunkTotal(),
+                                    chunkStitchingGroup.getExpectedChunkTotal(),
                                     chunkStitchingGroup.getCurrentChunkTotal());
                     break;
                 case SIZE:

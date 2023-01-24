@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ChunkStitcherTest {
 
-    static final byte[] BYTES = new byte[100];
+    static final byte[] BYTES = new byte[1000];
     static final int CHUNK_BYTE_SIZE = 10;
 
     @Nested
