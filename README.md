@@ -184,10 +184,10 @@ returns an empty `Optional`, indicating no original data unit can yet be restore
 
 The same stitcher instance should be used for all chunks. It caches all "pending" chunks received by the `stitch` method
 in different groups, each group representing one original data unit. When an incoming chunk renders its own
-corresponding group "complete" - i.e. the group has gathered all the chunks chopped up from the original data unit -
-then the chunks are immediately stitched back to the original data bytes, and the entire group is evicted from the
-cache. The restored bytes are packed and returned in an `Optional` - nonempty indicating the contained data is a
-complete restore of the original.
+corresponding group "complete" - i.e. the group has gathered all the chunks of the original data unit - then the chunks
+are immediately stitched back to the original data bytes, and the entire group is evicted from the cache. The restored
+bytes are packed and returned in an `Optional` - nonempty indicating the contained data is a complete restore of the
+original.
 
 By default, a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded
 no matter how much time has passed without being able to restore the group back to the original data unit:
