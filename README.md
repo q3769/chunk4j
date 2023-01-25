@@ -62,10 +62,9 @@ network node, the group of chunks can be collectively stitched back together to 
 ```java
 public class MessageProducer {
 
-    priviate Chopper chopper = ChunkChopper.ofChunkByteSize(1024); // each chopped off chunk holds up to 1024 bytes
-    prviate MessagingTransport transport = ...;
-    
-    ...
+    private Chopper chopper = ChunkChopper.ofChunkByteSize(1024); // each chopped off chunk holds up to 1024 bytes
+
+    @Autowired private MessagingTransport transport;
 
     /**
      * Sender method of business data
@@ -78,9 +77,8 @@ public class MessageProducer {
      * pack/serialize/marshal the chunk POJO into a transport-specific message
      */
     private Message toMessage(Chunk chunk) {
-        ...
+        //...
     }
-    ...
 }
 ```
 
@@ -142,15 +140,15 @@ public interface Stitcher {
      *              together and returned. Otherwise, if the chunk group still hasn't gathered all the chunks needed,
      *              even with the addition of this chunk, then the whole group will be kept around, waiting for the
      *              missing chunk(s) to arrive.
-     * @return Optional non-empty and contains the original data blob restored by stitching if the input chunk is the
+     * @return Optional nonempty and contains the original data blob restored by stitching if the input chunk is the
      *         last missing piece of the entire chunk group representing the original data; empty otherwise.
      */
     Optional<byte[]> stitch(Chunk chunk);
 }
 ```
 
-On the stitcher side, a group has to gather all the previously chopped chunks before the original data blob represented
-by this group can be stitched back together and restored.
+On the stitcher side, a group must gather all the previously chopped chunks before the original data blob represented by
+this group can be stitched back together and restored.
 
 #### Usage example:
 
@@ -160,8 +158,6 @@ public class MessageConsumer {
     private final Stitcher stitcher = new ChunkStitcher.Builder().build();
 
     @Autowried private DomainDataProcessor domainDataProcessor;
-        
-        ...
 
     /**
      * Suppose the run-time invocation of this method is managed by messaging provider/transport
@@ -175,25 +171,23 @@ public class MessageConsumer {
      * unpack/deserialize/unmarshal the chunk POJO from the transport-specific message
      */
     private Chunk toChunk(Message message) {
-        ...
+        //...
     }
-    ...
 }
 ```
 
-The `stitch` method should be repeatedly called on every chunk ever received by the Stitcher. On each such call and
-addition of the
-received chunk, if a meaningful group can form to complete and restore the original data blob in bytes, such bytes are
-returned inside an `Optional`; otherwise if the group is still "incomplete" even with the addition of this current
-chunk, then the `stitch` method returns an empty `Optional`. I.e. You keep calling the `stitch` method with each and
-every chunk you received; you'll know you get a fully restored original data blob when the method returns a
-non-empty `Optional` that contains the restored data bytes.
+The `stitch` method should be repeatedly called on every chunk ever received by the Stitcher. With each call, if the
+input chunk is the last expected piece chopped from an original data unit, then the `stitch` method returns a
+nonempty `Optional` containing the completely restored original data that is ready for further processing per business
+needs. Otherwise, if the input chunk is not the last one expected of its original data unit, then the `stitch` method
+returns an empty `Optional`, indicating no original data unit can yet be restored and ready for business processing.
 
-Note that the stitcher caches all "pending" chunks it has received via the `stitch` method in different groups, each
-group representing one original data unit. When an incoming chunk renders its own corresponding group "complete" - i.e.
-the group has gathered all the chunks needed to restore the whole group of chunks back to the original data unit - then
-such group of chunks are stitched back together for original data restoration. As soon as the original data unit is
-restored and returned by the `stitch` method, the entire chunk group is evicted from the cache.
+The same stitcher instance should be used for all chunks. It caches all "pending" chunks received by the `stitch` method
+in different groups, each group representing one original data unit. When an incoming chunk renders its own
+corresponding group "complete" - i.e. the group has gathered all the chunks chopped up from the original data unit -
+then the chunks are immediately stitched back to the original data bytes, and the entire group is evicted from the
+cache. The restored bytes are packed and returned in an `Optional` - nonempty indicating the contained data is a
+complete restore of the original.
 
 By default, a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded
 no matter how much time has passed without being able to restore the group back to the original data unit:
