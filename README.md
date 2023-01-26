@@ -191,8 +191,8 @@ is, with that chunk, the group has gathered all the chunks of the original data 
 
 - The entire group of chunks is stitched to restore the original data bytes;
 - The complete group of chunks is evicted from the Stitcher's cache;
-- The restored bytes are returned in an `Optional` - nonempty, indicating the data contained inside is a complete
-  restore of the original.
+- The restored bytes from the evicted group are returned in an `Optional` - nonempty, indicating the data contained
+  inside is a complete restore of the original.
 
 By default, a stitcher caches unlimited groups of pending chunks, and a pending group of chunks will never be discarded
 no matter how much time has passed while awaiting all the chunks of the original data unit to arrive:
