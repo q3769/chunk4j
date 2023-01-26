@@ -176,21 +176,26 @@ public class MessageConsumer {
 }
 ```
 
-The `stitch` method should be repeatedly called on every chunk ever received by the Stitcher. With each call, if the
-input chunk is the last expected piece chopped from an original data unit, then the `stitch` method returns a
-nonempty `Optional` containing the completely restored original data that is ready for further processing per business
-needs. Otherwise, if the input chunk is not the last one expected of its original data unit, then the `stitch` method
-returns an empty `Optional`, indicating no original data unit can yet be restored and ready for business processing.
+It is imperative that all received chunks be stitched by the same Stitcher instance. The instance's `stitch` method
+should be repeatedly called on every chunk. With each call, if the input chunk is the last expected piece chopped from
+an original data unit, then the `stitch` method returns a nonempty `Optional` containing the completely restored bytes
+of the original data unit. Otherwise, if the input chunk is not the last one expected of its original data unit, then
+the `stitch` method returns an empty `Optional`, indicating no original data unit can yet be restored.
 
-The same stitcher instance should be used for all chunks. It caches all "pending" chunks received by the `stitch` method
-in different groups, each group representing one original data unit. When an incoming chunk renders its own
-corresponding group "complete" - i.e. the group has gathered all the chunks of the original data unit - then the chunks
-are immediately stitched back to the original data bytes, and the entire group is evicted from the cache. The restored
-bytes are packed and returned in an `Optional` - nonempty indicating the contained data is a complete restore of the
-original.
+The `stitch` method will only return each restored data unit once. The API client should process or retain each returned
+data unit since the Stitcher will not keep around any already-returned data unit.
 
-By default, a stitcher caches unbounded groups of pending chunks, and a pending group of chunks will never be discarded
-no matter how much time has passed without being able to restore the group back to the original data unit:
+The same Stitcher instance caches all the "pending" chunks received via the `stitch` method in different groups; each
+group represents one original data unit. When an incoming chunk renders its own corresponding group "complete", i.e. the
+group has gathered all the chunks of the original data unit, then
+
+- The entire group of chunks is stitched to restore the original data bytes;
+- The complete group of chunks is evicted from the cache;
+- The restored bytes are returned in an `Optional`, nonempty, indicating the data contained inside is a complete restore
+  of the original.
+
+By default, a stitcher caches unlimited groups of pending chunks, and a pending group of chunks will never be discarded
+no matter how much time has passed without being able to restore back to the original data unit:
 
 ```jshelllanguage
 new ChunkStitcher.Builder().build()
