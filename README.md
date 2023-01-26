@@ -179,16 +179,16 @@ public class MessageConsumer {
 
 It is imperative that all received chunks be stitched by the same Stitcher instance. The instance's `stitch` method
 should be repeatedly called on every chunk. With each call, if the input chunk is the last expected piece chopped from
-an original data unit, then the `stitch` method returns a nonempty `Optional` containing the completely restored bytes
-of the original data unit. Otherwise, if the input chunk is not the last one expected of its original data unit, then
-the `stitch` method returns an empty `Optional`, indicating no original data unit can yet be restored.
+an original data unit, then the Stitcher returns a nonempty `Optional` containing the completely restored bytes of the
+original data unit. Otherwise, if the input chunk is not the last one expected of its original data unit, then the
+Stitcher keeps the chunk aside and returns an empty `Optional`, indicating no original data unit can yet be restored.
 
 The `stitch` method will only return each restored data unit once. The API client should process or retain each returned
-data unit since the Stitcher will not keep around any already-returned data unit.
+data unit as the Stitcher will not keep around any already-returned data unit.
 
-The same Stitcher instance caches all the "pending" chunks received via the `stitch` method in different groups; each
-group represents one original data unit. When an incoming chunk renders its own corresponding group "complete" - that
-is, with that chunk, the group has gathered all the chunks of the original data unit, then
+The same Stitcher instance keeps/caches all the "pending" chunks received via the `stitch` method in different groups;
+each group represents one original data unit. When an incoming chunk renders its own corresponding group "complete" -
+that is, with that chunk, the group has gathered all the chunks of the original data unit, then
 
 - The entire group of chunks is stitched to restore the original data bytes;
 - The complete group of chunks is evicted from the Stitcher's cache;
