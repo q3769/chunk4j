@@ -195,7 +195,7 @@ group has gathered all the chunks of the original data unit, then
   of the original.
 
 By default, a stitcher caches unlimited groups of pending chunks, and a pending group of chunks will never be discarded
-no matter how much time has passed without being able to restore back to the original data unit:
+no matter how much time has passed while awaiting all the chunks of the original data unit to arrive:
 
 ```jshelllanguage
 new ChunkStitcher.Builder().build()
