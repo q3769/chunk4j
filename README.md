@@ -186,13 +186,13 @@ The `stitch` method will only return each restored data unit once. The API clien
 data unit since the Stitcher will not keep around any already-returned data unit.
 
 The same Stitcher instance caches all the "pending" chunks received via the `stitch` method in different groups; each
-group represents one original data unit. When an incoming chunk renders its own corresponding group "complete", that is,
-with that chunk, the group has gathered all the chunks of the original data unit, then
+group represents one original data unit. When an incoming chunk renders its own corresponding group "complete" - that
+is, with that chunk, the group has gathered all the chunks of the original data unit, then
 
 - The entire group of chunks is stitched to restore the original data bytes;
 - The complete group of chunks is evicted from the Stitcher's cache;
-- The restored bytes are returned in an `Optional`, nonempty, indicating the data contained inside is a complete restore
-  of the original.
+- The restored bytes are returned in an `Optional` - nonempty, indicating the data contained inside is a complete
+  restore of the original.
 
 By default, a stitcher caches unlimited groups of pending chunks, and a pending group of chunks will never be discarded
 no matter how much time has passed while awaiting all the chunks of the original data unit to arrive:
