@@ -235,13 +235,12 @@ to keep the **overall** message size under the transport limit.
 
 When working with a messaging provider, you want to acknowledge/commit all the messages of an entire group of chunks in
 an all-or-nothing fashion, e.g. by using the individual and explicit commit mechanism. The all-or-nothing group commits
-help ensure, in the case of producer/consumer node crash, no original data units get lost after node recovery.
+help ensure, in the case of producer/consumer node crash, no original data units get lost after node recovery. It may be
+worthwhile to obtain/develop such mechanism when it is not directly available from the particular messaging provider.
 
-If, however, the particular messaging provider lacks such mechanism that enables the all-or-nothing commit, then in case
-of node crash, it is possible that the original data unit whose group of chunks gets "cut off in the middle" at the time
-of crash will be lost in transportation. All the chunks of a group form a "session" that represents the original data
-unit. Loss of such sessions is similar to the case where active web sessions get lost when a stateful web application
-node hosting those sessions fails. To assess the potential "damage", you may need to ask in your system:
+If the all-or-nothing group commit is unavailable, then in case of a node crash, it is possible that the group loses
+chunks. The loss of any chunks in a group semantically equates the loss of entire group, thus the original data unit. To
+assess the potential "damage", you may need to ask in your system:
 
 - At run-time, how often does an original data unit truly need more than one chunk to hold?
 - How often does a node crash or go in and out of the system?
