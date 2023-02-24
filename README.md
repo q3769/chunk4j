@@ -1,5 +1,3 @@
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.q3769/chunk4j.svg?label=Chunk4J)](https://search.maven.org/search?q=g:%22io.github.q3769%22%20AND%20a:%22chunk4j%22)
-
 A Java API to chop up larger data blobs into smaller "chunks" of a pre-defined size, and stitch the chunks back together
 to restore the original data when needed.
 
