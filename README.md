@@ -1,3 +1,5 @@
+[![](https://img.shields.io/static/v1?label=github&message=repo&color=blue)](https://github.com/q3769/chunk4j)
+
 A Java API to chop up larger data blobs into smaller "chunks" of a pre-defined size, and stitch the chunks back together
 to restore the original data when needed.
 
@@ -25,8 +27,7 @@ Java 8 or better
 
 # Get it...
 
-Available
-at [![Maven Central](https://img.shields.io/maven-central/v/io.github.q3769/chunk4j.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.q3769%22%20AND%20a:%22chunk4j%22)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.q3769/chunk4j.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.q3769%22%20AND%20a:%22chunk4j%22)
 
 # Use it...
 
