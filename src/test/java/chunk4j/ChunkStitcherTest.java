@@ -49,12 +49,12 @@ class ChunkStitcherTest {
             int insufficientMaxGroups = originalDataItems / 500;
             ChunkStitcher tot = new ChunkStitcher.Builder().maxStitchingGroups(insufficientMaxGroups).build();
             List<Chunk> chunksOfAllItems = new ArrayList<>();
-            ChunkChopper chunkChopper = ChunkChopper.ofChunkByteSize(CHUNK_BYTE_SIZE);
+            ChunkChopper chunkChopper = ChunkChopper.ofByteSize(CHUNK_BYTE_SIZE);
             for (int i = 0; i < originalDataItems; i++) {
                 chunksOfAllItems.addAll(chunkChopper.chop(BYTES));
             }
 
-            ExecutorService executorService = Executors.newFixedThreadPool(insufficientMaxGroups * 10);
+            ExecutorService executorService = Executors.newFixedThreadPool(insufficientMaxGroups * 100);
             List<Future<Optional<byte[]>>> allStitchedFutures = new ArrayList<>();
             for (Chunk chunk : chunksOfAllItems) {
                 allStitchedFutures.add(executorService.submit(() -> tot.stitch(chunk)));
@@ -79,7 +79,7 @@ class ChunkStitcherTest {
 
         @Test
         void lessThanNeeded() throws ExecutionException, InterruptedException {
-            List<Chunk> chunks = ChunkChopper.ofChunkByteSize(CHUNK_BYTE_SIZE).chop(BYTES);
+            List<Chunk> chunks = ChunkChopper.ofByteSize(CHUNK_BYTE_SIZE).chop(BYTES);
             long maxTimePerStitch = TOTAL_STITCH_TIME_MILLIS / chunks.size();
             Duration lessThanNeededToStitchAll = Duration.ofMillis(TOTAL_STITCH_TIME_MILLIS - maxTimePerStitch);
             ChunkStitcher tot = new ChunkStitcher.Builder().maxStitchTime(lessThanNeededToStitchAll).build();
@@ -104,7 +104,7 @@ class ChunkStitcherTest {
         @Test
         void exceedingMaxStitchingSize() {
             ChunkStitcher tot = new ChunkStitcher.Builder().maxStitchedByteSize(maxStitchedByteSize).build();
-            List<Chunk> chunks = ChunkChopper.ofChunkByteSize(CHUNK_BYTE_SIZE).chop(BYTES);
+            List<Chunk> chunks = ChunkChopper.ofByteSize(CHUNK_BYTE_SIZE).chop(BYTES);
 
             assertThrows(IllegalArgumentException.class, () -> {
                 for (Chunk chunk : chunks) {
