@@ -59,7 +59,7 @@ network node, the group of chunks can be collectively stitched back together to 
 ```java
 public class MessageProducer {
 
-	private Chopper chopper = ChunkChopper.ofChunkByteSize(1024); // each chopped off chunk holds up to 1024 bytes
+	private Chopper chopper = ChunkChopper.ofByteSize(1024); // each chopped off chunk holds up to 1024 bytes
 
 	@Autowired private MessagingTransport transport;
 
