@@ -42,7 +42,7 @@ class Chunk4jIntegrationTest {
 
     @Test
     void chunksInRandomOrder() {
-        ChunkChopper chopper = ChunkChopper.ofChunkByteSize(4);
+        ChunkChopper chopper = ChunkChopper.ofByteSize(4);
         ChunkStitcher stitcher = new ChunkStitcher.Builder().build();
 
         List<Chunk> choppedMingledAndScrambled = new ArrayList<>();
