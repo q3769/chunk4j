@@ -128,7 +128,7 @@
         <dependency>
             <groupId>io.github.elf4j</groupId>
             <artifactId>elf4j-impl</artifactId>
-            <version>0.8.8</version>
+            <version>0.8.9</version>
             <scope>test</scope>
         </dependency>
         <dependency>
