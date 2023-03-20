@@ -1,9 +1,9 @@
-[![](https://img.shields.io/static/v1?label=github&message=repo&color=blue)](https://github.com/q3769/chunk4j)
+# chunk4j
 
 A Java API to chop up larger data blobs into smaller "chunks" of a pre-defined size, and stitch the chunks back together
 to restore the original data when needed.
 
-# User story
+## User story
 
 As a user of the chunk4j API, I want to chop a data blob (bytes) into smaller pieces of a pre-defined size and, when
 needed, restore the original data by stitching the pieces back together.
@@ -21,61 +21,61 @@ Notes:
   the data entries being transported at run-time will, by their intrinsic nature, never go beyond the default or
   customized limit.
 
-# Prerequisite
+## Prerequisite
 
 Java 8 or better
 
-# Get it...
+## Get it...
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.q3769/chunk4j.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.q3769%22%20AND%20a:%22chunk4j%22)
 
-# Use it...
+## Use it...
 
 - The implementation of chunk4j API is thread-safe.
 
-## The Chopper
+### The Chopper
 
-### API:
+#### API:
 
 ```java
 public interface Chopper {
 
-	/**
-	 * @param bytes the original data blob to be chopped into chunks
-	 * @return the group of chunks which the original data blob is chopped into. Each chunk carries a portion of the
-	 *         original bytes; and the size of that portion has a pre-configured maximum (a.k.a. the {@code Chunk}'s
-	 *         capacity). Thus, if the size of the original bytes is smaller or equal to the chunk's capacity, then the
-	 *         returned chunk group will have only one chunk element.
-	 */
-	List<Chunk> chop(byte[] bytes);
+    /**
+     * @param bytes the original data blob to be chopped into chunks
+     * @return the group of chunks which the original data blob is chopped into. Each chunk carries a portion of the
+     *         original bytes; and the size of that portion has a pre-configured maximum (a.k.a. the {@code Chunk}'s
+     *         capacity). Thus, if the size of the original bytes is smaller or equal to the chunk's capacity, then the
+     *         returned chunk group will have only one chunk element.
+     */
+    List<Chunk> chop(byte[] bytes);
 }
 ```
 
 A larger blob of data can be chopped up into smaller "chunks" to form a "group". When needed, often on a different
 network node, the group of chunks can be collectively stitched back together to restore the original data.
 
-### Usage example:
+#### Usage example:
 
 ```java
 public class MessageProducer {
 
-	private Chopper chopper = ChunkChopper.ofByteSize(1024); // each chopped off chunk holds up to 1024 bytes
+  private final Chopper chopper = ChunkChopper.ofByteSize(1024); // each chopped off chunk holds up to 1024 bytes
 
-	@Autowired private MessagingTransport transport;
+  @Autowired private MessagingTransport transport;
 
-	/**
-	 * Sender method of business data
-	 */
-	public void sendBusinessDomainData(String domainDataText) {
-		chopper.chop(domainDataText.getBytes()).forEach((chunk) -> transport.send(toMessage(chunk)));
-	}
+  /**
+   * Sender method of business data
+   */
+  public void sendBusinessDomainData(String domainDataText) {
+    chopper.chop(domainDataText.getBytes()).forEach((chunk) -> transport.send(toMessage(chunk)));
+  }
 
-	/**
-	 * pack/serialize/marshal the chunk POJO into a transport-specific message
-	 */
-	private Message toMessage(Chunk chunk) {
-		//...
-	}
+  /**
+   * pack/serialize/marshal the chunk POJO into a transport-specific message
+   */
+  private Message toMessage(Chunk chunk) {
+    //...
+  }
 }
 ```
 
@@ -83,40 +83,40 @@ On the `Chopper` side, you only have to say how big you want the chunks chopped 
 divide up the original data bytes based on the chunk size you specified, and assign a unique group ID to all the chunks
 in the same group representing the original data unit.
 
-## The Chunk
+### The Chunk
 
-### API:
+#### API:
 
 ```java
 public class Chunk implements Serializable {
 
-	private static final long serialVersionUID = 42L;
+    private static final long serialVersionUID = 42L;
 
-	/**
-	 * The group ID of the original data blob. All chunks in the same group share the same group ID.
-	 */
-	@EqualsAndHashCode.Include UUID groupId;
+    /**
+     * The group ID of the original data blob. All chunks in the same group share the same group ID.
+     */
+    @EqualsAndHashCode.Include UUID groupId;
 
-	/**
-	 * Ordered index at which this current chunk is positioned inside the group. Chunks are chopped off from the
-	 * original data bytes in sequential order, indexed as such, and assigned with the same group ID as all other chunks
-	 * in the group that represents the original data bytes.
-	 */
-	@EqualsAndHashCode.Include int index;
+    /**
+     * Ordered index at which this current chunk is positioned inside the group. Chunks are chopped off from the
+     * original data bytes in sequential order, indexed as such, and assigned with the same group ID as all other chunks
+     * in the group that represents the original data bytes.
+     */
+    @EqualsAndHashCode.Include int index;
 
-	/**
-	 * Total number of chunks the original data blob is chopped to form the group.
-	 */
-	int groupSize;
+    /**
+     * Total number of chunks the original data blob is chopped to form the group.
+     */
+    int groupSize;
 
-	/**
-	 * Data bytes chopped for this current chunk to hold. 
-	 */
-	byte[] bytes;
+    /**
+     * Data bytes chopped for this current chunk to hold. 
+     */
+    byte[] bytes;
 }
 ```
 
-### Usage example:
+#### Usage example:
 
 Chunk4J aims to handle most details of the `Chunk` behind the scenes of the `Chopper` and `Stitcher` API. For the API
 client, it suffices to know that `Chunk` is a simple POJO data holder; serializable, it carries the data bytes
@@ -124,9 +124,9 @@ travelling from the `Chopper` to the `Stitcher`. To transport Chunks over the ne
 pack the Chunk into a transport-specific message on the Chopper's end, and unpack the message back to a Chunk on the
 Stitcher's end, using the POJO marshal-unmarshal technique applicable to the transport.
 
-## The Stitcher
+### The Stitcher
 
-### API:
+#### API:
 
 ```java
 public interface Stitcher {
@@ -147,7 +147,7 @@ public interface Stitcher {
 On the stitcher side, a group must gather all the previously chopped chunks before the original data blob represented by
 this group can be stitched back together and restored.
 
-### Usage example:
+#### Usage example:
 
 ```java
 public class MessageConsumer {
@@ -219,15 +219,15 @@ This stitcher is customized by a combination of both aspects:
 new ChunkStitcher.Builder().maxStitchTime(Duration.ofSeconds(5)).maxStitchingGroups(100).build()
 ```
 
-## Hints on using chunk4j API in messaging
+### Hints on using chunk4j API in messaging
 
-### Chunk size/capacity
+#### Chunk size/capacity
 
 Chunk4J works on the application layer of the network (Layer 7). There is a small fixed-size overhead in addition to
 a chunk's byte size to serialize the entire Chunk object. Take all possible overheads into account when designing
 to keep the **overall** message size under the transport limit.
 
-### Message acknowledgment/commit
+#### Message acknowledgment/commit
 
 When working with a messaging provider, you want to acknowledge/commit all the messages of an entire group of chunks in
 an all-or-nothing fashion, e.g. by using the individual and explicit commit mechanism. The all-or-nothing group commits
