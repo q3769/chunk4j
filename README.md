@@ -131,16 +131,16 @@ Stitcher's end, using the POJO marshal-unmarshal technique applicable to the tra
 ```java
 public interface Stitcher {
 
-	/**
-	 * @param chunk to be added to its corresponding chunk group. If this chunk renders its group "complete", i.e. all
-	 *              the chunks of the original data blob are gathered, then the original data blob will be stitched
-	 *              together and returned. Otherwise, if the chunk group still hasn't gathered all the chunks needed,
-	 *              even with the addition of this chunk, then the whole group will be kept around, waiting for the
-	 *              missing chunk(s) to arrive.
-	 * @return Optional nonempty and contains the original data blob restored by stitching if the input chunk is the
-	 *         last missing piece of the entire chunk group representing the original data; empty otherwise.
-	 */
-	Optional<byte[]> stitch(Chunk chunk);
+    /**
+     * @param chunk to be added to its corresponding chunk group. If this chunk renders its group "complete", i.e. all
+     *              the chunks of the original data blob are gathered, then the original data blob will be stitched
+     *              together and returned. Otherwise, if the chunk group still hasn't gathered all the chunks needed,
+     *              even with the addition of this chunk, then the whole group will be kept around, waiting for the
+     *              missing chunk(s) to arrive.
+     * @return Optional nonempty and contains the original data blob restored by stitching if the input chunk is the
+     *         last missing piece of the entire chunk group representing the original data; empty otherwise.
+     */
+    Optional<byte[]> stitch(Chunk chunk);
 }
 ```
 
@@ -152,24 +152,24 @@ this group can be stitched back together and restored.
 ```java
 public class MessageConsumer {
 
-	private final Stitcher stitcher = new ChunkStitcher.Builder().build();
+    private final Stitcher stitcher = new ChunkStitcher.Builder().build();
 
-	@Autowried private DomainDataProcessor domainDataProcessor;
+    @Autowried private DomainDataProcessor domainDataProcessor;
 
-	/**
-	 * Suppose the run-time invocation of this method is managed by messaging provider/transport
-	 */
-	public void onReceiving(Message message) {
-		stitcher.stitch(toChunk(message))
-			.ifPresent(originalDomainDataBytes -> domainDataProcessor.process(new String(originalDomainDataBytes)));
-	}
+    /**
+     * Suppose the run-time invocation of this method is managed by messaging provider/transport
+     */
+    public void onReceiving(Message message) {
+        stitcher.stitch(toChunk(message))
+                .ifPresent(originalDomainDataBytes -> domainDataProcessor.process(new String(originalDomainDataBytes)));
+    }
 
-	/**
-	 * unpack/deserialize/unmarshal the chunk POJO from the transport-specific message
-	 */
-	private Chunk toChunk(Message message) {
-		//...
-	}
+    /**
+     * unpack/deserialize/unmarshal the chunk POJO from the transport-specific message
+     */
+    private Chunk toChunk(Message message) {
+        //...
+    }
 }
 ```
 
