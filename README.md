@@ -59,23 +59,23 @@ network node, the group of chunks can be collectively stitched back together to 
 ```java
 public class MessageProducer {
 
-  private final Chopper chopper = ChunkChopper.ofByteSize(1024); // each chopped off chunk holds up to 1024 bytes
+    private final Chopper chopper = ChunkChopper.ofByteSize(1024); // each chopped off chunk holds up to 1024 bytes
 
-  @Autowired private MessagingTransport transport;
+    @Autowired private MessagingTransport transport;
 
-  /**
-   * Sender method of business data
-   */
-  public void sendBusinessDomainData(String domainDataText) {
-    chopper.chop(domainDataText.getBytes()).forEach((chunk) -> transport.send(toMessage(chunk)));
-  }
+    /**
+     * Sender method of business data
+     */
+    public void sendBusinessDomainData(String domainDataText) {
+        chopper.chop(domainDataText.getBytes()).forEach((chunk) -> transport.send(toMessage(chunk)));
+    }
 
-  /**
-   * pack/serialize/marshal the chunk POJO into a transport-specific message
-   */
-  private Message toMessage(Chunk chunk) {
-    //...
-  }
+    /**
+     * pack/serialize/marshal the chunk POJO into a transport-specific message
+     */
+    private Message toMessage(Chunk chunk) {
+        //...
+    }
 }
 ```
 
