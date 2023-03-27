@@ -32,11 +32,12 @@ import java.util.Optional;
 public interface Stitcher {
 
     /**
-     * @param chunk to be added to its corresponding chunk group. If this chunk renders its group "complete", i.e. all
-     *              the chunks of the original data blob are gathered, then the original data blob will be stitched
-     *              together and returned. Otherwise, if the chunk group still hasn't gathered all the chunks needed,
-     *              even with the addition of this chunk, then the whole group will be kept around, waiting for the
-     *              missing chunk(s) to arrive.
+     * @param chunk
+     *         to be added to its corresponding chunk group. If this chunk renders its group "complete", i.e. all the
+     *         chunks of the original data blob are gathered, then the original data blob will be stitched together and
+     *         returned. Otherwise, if the chunk group still hasn't gathered all the chunks needed, even with the
+     *         addition of this chunk, then the whole group will be kept around, waiting for the missing chunk(s) to
+     *         arrive.
      * @return non-empty <code>Optional</code> containing the original data blob restored by the stitcher if the input
      *         chunk is the last missing piece of the entire chunk group representing the original data; otherwise, if
      *         the input chunk is not the last one expected, empty <code>Optional</code>.

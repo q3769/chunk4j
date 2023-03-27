@@ -32,7 +32,8 @@ import java.util.List;
 public interface Chopper {
 
     /**
-     * @param bytes the original data blob to be chopped into chunks
+     * @param bytes
+     *         the original data blob to be chopped into chunks
      * @return the group of chunks which the original data blob is chopped into. Each chunk carries a portion of the
      *         original bytes; and the size of that portion has a pre-configured maximum (a.k.a. the {@code Chunk}'s
      *         capacity). Thus, if the size of the original bytes is smaller or equal to the chunk's capacity, then the

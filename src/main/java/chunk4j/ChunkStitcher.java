@@ -69,8 +69,9 @@ public final class ChunkStitcher implements Stitcher {
     }
 
     /**
-     * @param chunk to be added to its corresponding chunk group, possibly stitched to restore the original data bytes
-     *              if this is the last chunk the group is expecting.
+     * @param chunk
+     *         to be added to its corresponding chunk group, possibly stitched to restore the original data bytes if
+     *         this is the last chunk the group is expecting.
      * @return non-empty <code>Optional</code> containing the original data bytes restored by the stitcher if the input
      *         chunk is the last missing piece of the entire chunk group representing the original data; otherwise, if
      *         the input chunk is not the last one expected, empty <code>Optional</code>.
@@ -121,8 +122,9 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         /**
-         * @param maxStitchTime max duration from the very first chunk received by the stitcher to the original data is
-         *                      restored completely
+         * @param maxStitchTime
+         *         max duration from the very first chunk received by the stitcher to the original data is restored
+         *         completely
          * @return the fluent builder
          */
         public Builder maxStitchTime(Duration maxStitchTime) {
@@ -131,8 +133,9 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         /**
-         * @param v Optional safeguard against excessive large size of target restore data - either by mistake or
-         *          malicious attack. Default to no size limit.
+         * @param v
+         *         Optional safeguard against excessive large size of target restore data - either by mistake or
+         *         malicious attack. Default to no size limit.
          * @return same builder instance
          */
         public Builder maxStitchedByteSize(int v) {
@@ -141,7 +144,8 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         /**
-         * @param maxGroups max number of pending stitch groups. These groups will take up memory at runtime.
+         * @param maxGroups
+         *         max number of pending stitch groups. These groups will take up memory at runtime.
          * @return the fluent builder
          */
         public Builder maxStitchingGroups(long maxGroups) {
@@ -181,8 +185,9 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         /**
-         * @param chunk to be added in the stitching group, possibly stitched if this is the last chunk the group is
-         *              expecting.
+         * @param chunk
+         *         to be added in the stitching group, possibly stitched if this is the last chunk the group is
+         *         expecting.
          * @return the bytes by stitching together all the chunks in the group if the passed-in chunk is the last one
          *         the group is expecting; otherwise, <code>null</code>.
          */

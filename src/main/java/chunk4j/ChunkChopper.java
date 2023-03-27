@@ -47,7 +47,8 @@ public final class ChunkChopper implements Chopper {
     }
 
     /**
-     * @param maxChunkByteSize how big you want the chunks of your data chopped up to be
+     * @param maxChunkByteSize
+     *         how big you want the chunks of your data chopped up to be
      * @return new Chopper instance
      */
     public static ChunkChopper ofByteSize(int maxChunkByteSize) {
