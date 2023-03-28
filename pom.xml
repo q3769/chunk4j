@@ -28,7 +28,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.q3769</groupId>
     <artifactId>chunk4j</artifactId>
-    <version>20230309.0.4</version>
+    <version>20230309.0.5</version>
     <packaging>jar</packaging>
     <name>chunk4j</name>
     <description>A Java API to chop up larger data blobs into smaller "chunks" of a pre-defined size, and stitch the
@@ -137,16 +137,21 @@
             <version>2.2.1</version>
         </dependency>
         <dependency>
-            <groupId>io.github.elf4j</groupId>
-            <artifactId>elf4j-provider</artifactId>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
             <version>3.0.2</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.26</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.elf4j</groupId>
+            <artifactId>elf4j-provider</artifactId>
+            <version>3.0.2</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -171,11 +176,6 @@
             <artifactId>awaitility</artifactId>
             <version>4.2.0</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>31.1-jre</version>
         </dependency>
     </dependencies>
     <build>
