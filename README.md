@@ -39,15 +39,15 @@ Java 8 or better
 
 ```java
 public interface Chopper {
-  /**
-   * @param bytes
-   *         the original data blob to be chopped into chunks
-   * @return the group of chunks which the original data blob is chopped into. Each chunk carries a portion of the
-   *         original bytes; and the size of that portion has a pre-configured maximum (a.k.a. the {@code Chunk}'s
-   *         capacity). Thus, if the size of the original bytes is smaller or equal to the chunk's capacity, then the
-   *         returned chunk group will have only one chunk element.
-   */
-  List<Chunk> chop(byte[] bytes);
+    /**
+     * @param bytes
+     *         the original data blob to be chopped into chunks
+     * @return the group of chunks which the original data blob is chopped into. Each chunk carries a portion of the
+     *         original bytes; and the size of that portion has a pre-configured maximum (a.k.a. the {@code Chunk}'s
+     *         capacity). Thus, if the size of the original bytes is smaller or equal to the chunk's capacity, then the
+     *         returned chunk group will have only one chunk element.
+     */
+    List<Chunk> chop(byte[] bytes);
 }
 ```
 
@@ -130,18 +130,18 @@ Stitcher's end, using the POJO marshal-unmarshal technique applicable to the tra
 
 ```java
 public interface Stitcher {
-  /**
-   * @param chunk
-   *         to be added to its corresponding chunk group. If this chunk renders its group "complete", i.e. all the
-   *         chunks of the original data blob are gathered, then the original data blob will be stitched together and
-   *         returned. Otherwise, if the chunk group still hasn't gathered all the chunks needed, even with the
-   *         addition of this chunk, then the whole group will be kept around, waiting for the missing chunk(s) to
-   *         arrive.
-   * @return non-empty <code>Optional</code> containing the original data blob restored by the stitcher if the input
-   *         chunk is the last missing piece of the entire chunk group representing the original data; otherwise, if
-   *         the input chunk is not the last one expected, empty <code>Optional</code>.
-   */
-  Optional<byte[]> stitch(Chunk chunk);
+    /**
+     * @param chunk
+     *         to be added to its corresponding chunk group. If this chunk renders its group "complete", i.e. all the
+     *         chunks of the original data blob are gathered, then the original data blob will be stitched together and
+     *         returned. Otherwise, if the chunk group still hasn't gathered all the chunks needed, even with the
+     *         addition of this chunk, then the whole group will be kept around, waiting for the missing chunk(s) to
+     *         arrive.
+     * @return non-empty <code>Optional</code> containing the original data blob restored by the stitcher if the input
+     *         chunk is the last missing piece of the entire chunk group representing the original data; otherwise, if
+     *         the input chunk is not the last one expected, empty <code>Optional</code>.
+     */
+    Optional<byte[]> stitch(Chunk chunk);
 }
 ```
 
