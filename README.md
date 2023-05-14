@@ -1,3 +1,5 @@
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.q3769/chunk4j.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.q3769%22%20AND%20a:%22chunk4j%22)
+
 # chunk4j
 
 A Java API to chop up larger data blobs into smaller "chunks" of a pre-defined size, and stitch the chunks back together
@@ -28,6 +30,8 @@ Java 8 or better
 ## Get it...
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.q3769/chunk4j.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.q3769%22%20AND%20a:%22chunk4j%22)
+
+Install as a compile-scope dependency in Maven or other build tools alike.
 
 ## Use it...
 
