@@ -28,7 +28,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.q3769</groupId>
     <artifactId>chunk4j</artifactId>
-    <version>20230309.0.7</version>
+    <version>20230309.0.20230514</version>
     <packaging>jar</packaging>
     <name>chunk4j</name>
     <description>A Java API to chop up larger data blobs into smaller "chunks" of a pre-defined size, and stitch the
@@ -150,7 +150,7 @@
         <dependency>
             <groupId>io.github.elf4j</groupId>
             <artifactId>elf4j-provider</artifactId>
-            <version>7.1.2</version>
+            <version>8.0.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
