@@ -29,7 +29,6 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.Value;
 
-import java.io.Serializable;
 import java.util.UUID;
 
 /**
@@ -42,9 +41,7 @@ import java.util.UUID;
 @Value
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Builder
-public class Chunk implements Serializable {
-
-    private static final long serialVersionUID = 42L;
+public class Chunk {
 
     /**
      * The group ID of the original data blob. All chunks in the same group share the same group ID.
