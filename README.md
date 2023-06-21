@@ -119,13 +119,12 @@ public class Chunk {
 
 #### Usage example:
 
-Chunk4J aims to handle most details of the `Chunk` behind the scenes of the `Chopper` and `Stitcher` API. For the API
-client, it suffices to know that `Chunk` is a simple POJO data holder, carrying a portion of the original data bytes
-from the `Chopper` to the `Stitcher`. To transport Chunks over the network, the API client simply needs to pack the
-Chunk into a transport-specific message on the Chopper's end, and unpack the message back to a Chunk on the Stitcher's
-end, using the marshaling(serialize)-unmarshalling(deserialize) technique applicable to that transport for a POJO. Note
-that `Chunk` does not implement `java.io.Serializable`, with the expectation that the external data transport, rather
-than the JVM, will take care of the serialization/deserialization.
+`Chunk` is a simple POJO data holder, carrying a portion of the original data bytes from the `Chopper` to
+the `Stitcher`. To transport Chunks over the network, the API client needs to pack the Chunk instance into a
+transport-specific message on the Chopper's end, and unpack the message back to a Chunk instance on the Stitcher's end,
+using the marshal/serialize-unmarshal/deserialize technique applicable to that transport. Note that `Chunk` does not
+implement `java.io.Serializable`, with the expectation that the external data transport, rather than the JVM, will
+provide serialization/deserialization mechanism for the Chunk objects.
 
 ### The Stitcher
 
