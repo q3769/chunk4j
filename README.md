@@ -122,9 +122,9 @@ public class Chunk {
 `Chunk` is a simple POJO data holder, carrying a portion of the original data bytes from the `Chopper` to
 the `Stitcher`. To transport Chunks over the network, the API client needs to pack the Chunk instance into a
 transport-specific message on the Chopper's end, and unpack the message back to a Chunk instance on the Stitcher's end,
-using the marshal/serialize-unmarshal/deserialize technique applicable to that transport. Note that `Chunk` does not
-implement `java.io.Serializable`, with the expectation that the external data transport, rather than the JVM, will
-provide serialization/deserialization mechanism for the Chunk objects.
+using the marshal/serialize-unmarshal/deserialize technique applicable to that transport. Note that the `Chunk` itself
+does not implement `java.io.Serializable`; the expectation is that the external data transport, rather than the JVM,
+will provide the serialization/deserialization mechanism for the Chunk objects.
 
 ### The Stitcher
 

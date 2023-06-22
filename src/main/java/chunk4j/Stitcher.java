@@ -40,7 +40,7 @@ public interface Stitcher {
      *         arrive.
      * @return non-empty <code>Optional</code> containing the original data blob restored by the stitcher if the input
      *         chunk is the last missing piece of the entire chunk group representing the original data; otherwise, if
-     *         the input chunk is not the last one expected, empty <code>Optional</code>.
+     *         the input chunk is not the last one expected, then empty <code>Optional</code>.
      */
     Optional<byte[]> stitch(Chunk chunk);
 }
