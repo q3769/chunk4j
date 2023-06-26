@@ -24,8 +24,11 @@
 
 package chunk4j;
 
+import coco4j.MoreAwaitilities;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,5 +58,10 @@ class Chunk4jIntegrationTest {
 
         assertTrue(restored.contains(DATA_TEXT1));
         assertTrue(restored.contains(DATA_TEXT2));
+    }
+
+    @AfterEach
+    void awaitLogs() {
+        MoreAwaitilities.sleepInterruptibly(Duration.ofMillis(200L));
     }
 }

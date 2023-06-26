@@ -24,6 +24,8 @@
 
 package chunk4j;
 
+import coco4j.MoreAwaitilities;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -39,6 +41,11 @@ class ChunkStitcherTest {
 
     static final byte[] BYTES = new byte[1000];
     static final int CHUNK_BYTE_SIZE = 10;
+
+    @AfterEach
+    void awaitLogs() {
+        MoreAwaitilities.sleepInterruptibly(Duration.ofMillis(200L));
+    }
 
     @Nested
     class maxGroups {
