@@ -25,7 +25,7 @@
 package chunk4j;
 
 import coco4j.MoreAwaitilities;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -43,6 +43,11 @@ class Chunk4jIntegrationTest {
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
     private static final String DATA_TEXT2 = DATA_TEXT1 + DATA_TEXT1;
 
+    @AfterAll
+    static void awaitLogging() {
+        MoreAwaitilities.sleepInterruptibly(Duration.ofMillis(200L));
+    }
+
     @Test
     void chunksInRandomOrder() {
         ChunkChopper chopper = ChunkChopper.ofByteSize(4);
@@ -58,10 +63,5 @@ class Chunk4jIntegrationTest {
 
         assertTrue(restored.contains(DATA_TEXT1));
         assertTrue(restored.contains(DATA_TEXT2));
-    }
-
-    @AfterEach
-    void awaitLogs() {
-        MoreAwaitilities.sleepInterruptibly(Duration.ofMillis(200L));
     }
 }

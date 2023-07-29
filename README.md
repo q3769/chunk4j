@@ -61,6 +61,8 @@ network node, the group of chunks can be collectively stitched back together to 
 #### Usage example:
 
 ```java
+import chunk4j.Chunk;
+
 public class MessageProducer {
 
     private final Chopper chopper = ChunkChopper.ofByteSize(1024); // each chopped off chunk holds up to 1024 bytes
@@ -71,13 +73,13 @@ public class MessageProducer {
      * Sender method of business data
      */
     public void sendBusinessDomainData(String domainDataText) {
-        chopper.chop(domainDataText.getBytes()).forEach((chunk) -> transport.send(toMessage(chunk)));
+        chopper.chop(domainDataText.getBytes()).forEach((chunk) -> transport.send(chunkToMessage(chunk)));
     }
 
     /**
      * pack/serialize/marshal the chunk POJO into a transport-specific message
      */
-    private Message toMessage(Chunk chunk) {
+    private Message chunkToMessage(Chunk chunk) {
         //...
     }
 }
@@ -92,7 +94,15 @@ in the same group representing the original data unit.
 #### API:
 
 ```java
-public class Chunk {
+
+import java.io.Serializable;
+
+@Value
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Builder
+public class Chunk implements Serializable {
+
+    private static final long serialVersionUID = -1879320933982945956L;
     /**
      * The group ID of the original data blob. All chunks in the same group share the same group ID.
      */
@@ -111,20 +121,20 @@ public class Chunk {
     int groupSize;
 
     /**
-     * Data bytes chopped for this current chunk to hold. 
+     * Data bytes chopped for this current chunk to hold.
      */
-    byte[] bytes;
+    @ToString.Exclude byte[] bytes;
 }
 ```
 
 #### Usage example:
 
 `Chunk` is a simple POJO data holder, carrying a portion of the original data bytes from the `Chopper` to
-the `Stitcher`. To transport Chunks over the network, the API client needs to pack the Chunk instance into a
-transport-specific message on the Chopper's end, and unpack the message back to a Chunk instance on the Stitcher's end,
-using the marshal/serialize-unmarshal/deserialize technique applicable to that transport. Note that the `Chunk` itself
-does not implement `java.io.Serializable`; the expectation is that the external data/message transport, rather than the
-JVM, will provide the serialization-deserialization mechanism for the Chunk objects.
+the `Stitcher`. It is marked as a JDK `java.io.Serializable`. To transport a Chunk instance over the network, the API
+client is expected to package the serialized byte array of the instance into a transport-specific (JSON, Kafka,
+JMS, ...) message on the Chopper's end (as in `MessageProducer#chunkToMessage` above), and unpack the bytes back to a
+Chunk instance on the Stitcher's end (as in `MessageConsumer#messageToChunk` below). chunk4j will handle the rest of the
+data assembly details.
 
 ### The Stitcher
 
@@ -163,14 +173,14 @@ public class MessageConsumer {
      * Suppose the run-time invocation of this method is managed by messaging provider/transport
      */
     public void onReceiving(Message message) {
-        stitcher.stitch(toChunk(message))
+        stitcher.stitch(messageToChunk(message))
                 .ifPresent(originalDomainDataBytes -> domainDataProcessor.process(new String(originalDomainDataBytes)));
     }
 
     /**
      * unpack/deserialize/unmarshal the chunk POJO from the transport-specific message
      */
-    private Chunk toChunk(Message message) {
+    private Chunk messageToChunk(Message message) {
         //...
     }
 }
