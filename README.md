@@ -130,8 +130,8 @@ public class Chunk implements Serializable {
 #### Usage example:
 
 `Chunk` is a simple POJO data holder, carrying a portion of the original data bytes from the `Chopper` to
-the `Stitcher`. It is marked as a JDK `java.io.Serializable`. To transport a Chunk instance over the network, the API
-client is expected to package the serialized byte array of the instance into a transport-specific (JSON, Kafka,
+the `Stitcher`. It is marked as a JDK `java.io.Serializable`. To transport a Chunk over the network, the API client is
+expected to package the serialized byte array of the entire Chunk instance into a transport-specific (JSON, Kafka,
 JMS, ...) message on the Chopper's end (as in `MessageProducer#chunkToMessage` above), and unpack the bytes back to a
 Chunk instance on the Stitcher's end (as in `MessageConsumer#messageToChunk` below). chunk4j will handle the rest of the
 data assembly details.
