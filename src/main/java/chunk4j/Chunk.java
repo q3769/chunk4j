@@ -24,13 +24,12 @@
 
 package chunk4j;
 
+import java.io.Serializable;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.Value;
-
-import java.io.Serializable;
-import java.util.UUID;
 
 /**
  * A larger blob of data can be chopped up into smaller "chunks" to form a "group". When needed, often on a different
@@ -48,14 +47,16 @@ public class Chunk implements Serializable {
     /**
      * The group ID of the original data blob. All chunks in the same group share the same group ID.
      */
-    @EqualsAndHashCode.Include UUID groupId;
+    @EqualsAndHashCode.Include
+    UUID groupId;
 
     /**
      * Ordered index at which this current chunk is positioned inside the group. Chunks are chopped off from the
      * original data bytes in sequential order, indexed as such, and assigned with the same group ID as all other chunks
      * in the group that represents the original data bytes.
      */
-    @EqualsAndHashCode.Include int index;
+    @EqualsAndHashCode.Include
+    int index;
 
     /**
      * Total number of chunks the original data blob is chopped to form the group.
@@ -65,5 +66,6 @@ public class Chunk implements Serializable {
     /**
      * Data bytes chopped for this current chunk to hold.
      */
-    @ToString.Exclude byte[] bytes;
+    @ToString.Exclude
+    byte[] bytes;
 }

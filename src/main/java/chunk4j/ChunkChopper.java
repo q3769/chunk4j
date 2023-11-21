@@ -24,11 +24,11 @@
 
 package chunk4j;
 
-import javax.annotation.concurrent.ThreadSafe;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * @author Qingtian Wang

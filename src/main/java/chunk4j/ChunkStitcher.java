@@ -26,18 +26,17 @@ package chunk4j;
 
 import com.github.benmanes.caffeine.cache.*;
 import elf4j.Logger;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.ToString;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.NotThreadSafe;
-import javax.annotation.concurrent.ThreadSafe;
 import java.time.Duration;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
+import lombok.Data;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * @author Qingtian Wang
@@ -69,12 +68,11 @@ public final class ChunkStitcher implements Stitcher {
     }
 
     /**
-     * @param chunk
-     *         to be added to its corresponding chunk group, possibly stitched to restore the original data bytes if
-     *         this is the last chunk the group is expecting.
+     * @param chunk to be added to its corresponding chunk group, possibly stitched to restore the original data bytes
+     * if this is the last chunk the group is expecting.
      * @return non-empty <code>Optional</code> containing the original data bytes restored by the stitcher if the input
-     *         chunk is the last missing piece of the entire chunk group representing the original data; otherwise, if
-     *         the input chunk is not the last one expected, empty <code>Optional</code>.
+     * chunk is the last missing piece of the entire chunk group representing the original data; otherwise, if the input
+     * chunk is not the last one expected, empty <code>Optional</code>.
      */
     @Override
     public Optional<byte[]> stitch(@NonNull Chunk chunk) {
@@ -98,7 +96,8 @@ public final class ChunkStitcher implements Stitcher {
         }
         if (chunk.getBytes().length + group.getCurrentGroupByteSize() > maxStitchedByteSize) {
             logger.atWarn()
-                    .log("By adding {}, stitching group {} would have exceeded safe-guarding byte size {}",
+                    .log(
+                            "By adding {}, stitching group {} would have exceeded safe-guarding byte size {}",
                             chunk,
                             chunk.getGroupId(),
                             maxStitchedByteSize);
@@ -122,9 +121,8 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         /**
-         * @param maxStitchTime
-         *         max duration from the very first chunk received by the stitcher to the original data is restored
-         *         completely
+         * @param maxStitchTime max duration from the very first chunk received by the stitcher to the original data is
+         * restored completely
          * @return the fluent builder
          */
         public Builder maxStitchTime(Duration maxStitchTime) {
@@ -133,9 +131,8 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         /**
-         * @param v
-         *         Optional safeguard against excessive large size of target restore data - either by mistake or
-         *         malicious attack. Default to no size limit.
+         * @param v Optional safeguard against excessive large size of target restore data - either by mistake or
+         * malicious attack. Default to no size limit.
          * @return same builder instance
          */
         public Builder maxStitchedByteSize(int v) {
@@ -144,8 +141,7 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         /**
-         * @param maxGroups
-         *         max number of pending stitch groups. These groups will take up memory at runtime.
+         * @param maxGroups max number of pending stitch groups. These groups will take up memory at runtime.
          * @return the fluent builder
          */
         public Builder maxStitchingGroups(long maxGroups) {
@@ -165,7 +161,9 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         private static List<Chunk> sorted(Set<Chunk> chunks) {
-            return chunks.stream().sorted(Comparator.comparingInt(Chunk::getIndex)).collect(Collectors.toList());
+            return chunks.stream()
+                    .sorted(Comparator.comparingInt(Chunk::getIndex))
+                    .collect(Collectors.toList());
         }
 
         @Nonnull
@@ -185,14 +183,12 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         /**
-         * @param chunk
-         *         to be added in the stitching group, possibly stitched if this is the last chunk the group is
-         *         expecting.
+         * @param chunk to be added in the stitching group, possibly stitched if this is the last chunk the group is
+         * expecting.
          * @return the bytes by stitching together all the chunks in the group if the passed-in chunk is the last one
-         *         the group is expecting; otherwise, <code>null</code>.
+         * the group is expecting; otherwise, <code>null</code>.
          */
-        @Nullable
-        public byte[] addAndStitch(Chunk chunk) {
+        @Nullable public byte[] addAndStitch(Chunk chunk) {
             if (!chunks.add(chunk)) {
                 logger.atWarn().log("Duplicate chunk {} received and ignored", chunk);
                 return null;
@@ -226,14 +222,14 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         @Override
-        public long expireAfterCreate(@NonNull UUID uuid,
-                @NonNull ChunkStitcher.ChunkStitchingGroup chunks,
-                long currentTime) {
+        public long expireAfterCreate(
+                @NonNull UUID uuid, @NonNull ChunkStitcher.ChunkStitchingGroup chunks, long currentTime) {
             return duration.toNanos();
         }
 
         @Override
-        public long expireAfterUpdate(@NonNull UUID uuid,
+        public long expireAfterUpdate(
+                @NonNull UUID uuid,
                 @NonNull ChunkStitcher.ChunkStitchingGroup chunks,
                 long currentTime,
                 long currentDuration) {
@@ -241,7 +237,8 @@ public final class ChunkStitcher implements Stitcher {
         }
 
         @Override
-        public long expireAfterRead(@NonNull UUID uuid,
+        public long expireAfterRead(
+                @NonNull UUID uuid,
                 @NonNull ChunkStitcher.ChunkStitchingGroup chunks,
                 long currentTime,
                 long currentDuration) {
@@ -261,7 +258,8 @@ public final class ChunkStitcher implements Stitcher {
             switch (cause) {
                 case EXPIRED:
                     logger.atWarn()
-                            .log("chunk group [{}] took too long to stitch and expired after [{}], expecting [{}] chunks but only received [{}] when expired",
+                            .log(
+                                    "chunk group [{}] took too long to stitch and expired after [{}], expecting [{}] chunks but only received [{}] when expired",
                                     groupId,
                                     maxStitchTime,
                                     chunkStitchingGroup.getExpectedChunkTotal(),
@@ -269,7 +267,8 @@ public final class ChunkStitcher implements Stitcher {
                     break;
                 case SIZE:
                     logger.atWarn()
-                            .log("chunk group [{}] was removed due to exceeding max group count [{}]",
+                            .log(
+                                    "chunk group [{}] was removed due to exceeding max group count [{}]",
                                     groupId,
                                     maxStitchingGroups);
                     break;
