@@ -26,6 +26,8 @@ package chunk4j;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import coco4j.MoreExecutors;
+import elf4j.Logger;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +37,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class ChunkStitcherTest {
+    static final Logger log = Logger.instance();
 
-    static final byte[] BYTES = new byte[1000];
-    static final int CHUNK_BYTE_SIZE = 10;
+    static final byte[] BYTES = new byte[10000];
+    static final int CHUNK_BYTE_SIZE = 100;
 
     @Nested
     class maxGroups {
@@ -45,7 +48,7 @@ class ChunkStitcherTest {
         @Test
         void lessThanNeeded() throws InterruptedException, ExecutionException {
             int originalDataItems = 1000;
-            int insufficientMaxGroups = originalDataItems / 500;
+            int insufficientMaxGroups = 1;
             ChunkStitcher tot = new ChunkStitcher.Builder()
                     .maxStitchingGroups(insufficientMaxGroups)
                     .build();
@@ -55,10 +58,12 @@ class ChunkStitcherTest {
                 chunksOfAllItems.addAll(chunkChopper.chop(BYTES));
             }
 
-            ExecutorService executorService = Executors.newFixedThreadPool(insufficientMaxGroups * 100);
             List<Future<Optional<byte[]>>> allStitchedFutures = new ArrayList<>();
-            for (Chunk chunk : chunksOfAllItems) {
-                allStitchedFutures.add(executorService.submit(() -> tot.stitch(chunk)));
+            try (ExecutorService executorService =
+                    MoreExecutors.newBoundedVirtualThreadPerTaskExecutor(insufficientMaxGroups * 100)) {
+                for (Chunk chunk : chunksOfAllItems) {
+                    allStitchedFutures.add(executorService.submit(() -> tot.stitch(chunk)));
+                }
             }
             List<Optional<byte[]>> allStitchedOptionals = new ArrayList<>();
             for (Future<Optional<byte[]>> f : allStitchedFutures) {
@@ -67,6 +72,8 @@ class ChunkStitcherTest {
 
             long allStitchedItems =
                     allStitchedOptionals.stream().filter(Optional::isPresent).count();
+            log.atInfo().log("Original data items: {}", originalDataItems);
+            log.atInfo().log("Stitched data items: {}", allStitchedItems);
             assertTrue(
                     allStitchedItems < originalDataItems,
                     "stitched and restored items [" + allStitchedItems + "] should be less than original items ["
@@ -90,11 +97,12 @@ class ChunkStitcherTest {
                     .build();
             Optional<byte[]> stitched = Optional.of(new byte[42]);
 
-            ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-            for (Chunk chunk : chunks) {
-                stitched = scheduledExecutorService
-                        .schedule(() -> tot.stitch(chunk), maxTimePerStitch, TimeUnit.MILLISECONDS)
-                        .get();
+            try (ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor()) {
+                for (Chunk chunk : chunks) {
+                    stitched = scheduledExecutorService
+                            .schedule(() -> tot.stitch(chunk), maxTimePerStitch, TimeUnit.MILLISECONDS)
+                            .get();
+                }
             }
 
             assertFalse(stitched.isPresent(), "stitcher should have expired in [" + lessThanNeededToStitchAll + "]");

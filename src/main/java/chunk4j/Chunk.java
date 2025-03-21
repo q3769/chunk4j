@@ -24,6 +24,7 @@
 
 package chunk4j;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.UUID;
 import lombok.Builder;
@@ -42,6 +43,7 @@ import lombok.Value;
 @Builder
 public class Chunk implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = -1879320933982945956L;
 
     /** The group ID of the original data blob. All chunks in the same group share the same group ID. */

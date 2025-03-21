@@ -35,6 +35,7 @@ import java.util.List;
  *
  * @author Qingtian Wang
  */
+@FunctionalInterface
 public interface Chopper {
 
     /**

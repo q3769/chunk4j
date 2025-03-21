@@ -25,6 +25,7 @@
 package chunk4j;
 
 import com.github.benmanes.caffeine.cache.*;
+import elf4j.Level;
 import elf4j.Logger;
 import java.time.Duration;
 import java.util.*;
@@ -285,19 +286,12 @@ public final class ChunkStitcher implements Stitcher {
         }
     }
 
-    /** The SinceCreation class is used to determine the expiry time of a chunk group in the cache. */
-    private static class SinceCreation implements Expiry<UUID, ChunkStitchingGroup> {
-
-        private final Duration duration;
-
-        /**
-         * Constructor for the SinceCreation class.
-         *
-         * @param duration The duration after which a chunk group should expire.
-         */
-        SinceCreation(Duration duration) {
-            this.duration = duration;
-        }
+    /**
+     * The SinceCreation class is used to determine the expiry time of a chunk group in the cache.
+     *
+     * @param duration The duration after which a chunk group should expire.
+     */
+    private record SinceCreation(Duration duration) implements Expiry<UUID, ChunkStitchingGroup> {
 
         @Override
         public long expireAfterCreate(
@@ -338,7 +332,7 @@ public final class ChunkStitcher implements Stitcher {
         @Override
         public void onRemoval(UUID groupId, ChunkStitchingGroup chunkStitchingGroup, @NonNull RemovalCause cause) {
             switch (cause) {
-                case EXPIRED:
+                case EXPIRED ->
                     logger.atWarn()
                             .log(
                                     "chunk group [{}] took too long to stitch and expired after [{}], expecting [{}] chunks but only received [{}] when expired",
@@ -346,19 +340,13 @@ public final class ChunkStitcher implements Stitcher {
                                     maxStitchTime,
                                     chunkStitchingGroup.getExpectedChunkTotal(),
                                     chunkStitchingGroup.getCurrentChunkTotal());
-                    break;
-                case SIZE:
+                case SIZE ->
                     logger.atWarn()
                             .log(
                                     "chunk group [{}] was removed due to exceeding max group count [{}]",
                                     groupId,
                                     maxStitchingGroups);
-                    break;
-                case EXPLICIT:
-                case REPLACED:
-                case COLLECTED:
-                default:
-                    break;
+                default -> logger.atLevel(Level.OFF).log("Manual removals logging is OFF");
             }
         }
     }

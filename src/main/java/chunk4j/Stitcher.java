@@ -34,6 +34,7 @@ import java.util.Optional;
  *
  * @author Qingtian Wang
  */
+@FunctionalInterface
 public interface Stitcher {
 
     /**
