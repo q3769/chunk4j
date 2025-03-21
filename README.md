@@ -25,7 +25,8 @@ Notes:
 
 ## Prerequisite
 
-Java 8 or better
+* Java 8+ for versions earlier than 20250321.0.0 (exclusive)
+* Java 21+ for versions later than 20250321.0.0 (inclusive)
 
 ## Get it...
 
@@ -42,16 +43,20 @@ Install as a compile-scope dependency in Maven or other build tools alike.
 #### API:
 
 ```java
+
+@FunctionalInterface
 public interface Chopper {
-    /**
-     * @param bytes
-     *         the original data blob to be chopped into chunks
-     * @return the group of chunks which the original data blob is chopped into. Each chunk carries a portion of the
-     *         original bytes; and the size of that portion has a pre-configured maximum (a.k.a. the {@code Chunk}'s
-     *         capacity). Thus, if the size of the original bytes is smaller or equal to the chunk's capacity, then the
-     *         returned chunk group will have only one chunk element.
-     */
-    List<Chunk> chop(byte[] bytes);
+
+  /**
+   * Chops a byte array into a list of Chunk objects. Each Chunk object represents a portion of the original data
+   * blob. The size of each portion is determined by a pre-configured maximum size (the Chunk's capacity). If the size
+   * of the original data blob is smaller or equal to the Chunk's capacity, the returned list will contain only one
+   * Chunk.
+   *
+   * @param bytes the original data blob to be chopped into chunks
+   * @return the group of chunks which the original data blob is chopped into.
+   */
+  List<Chunk> chop(byte[] bytes);
 }
 ```
 
@@ -65,23 +70,24 @@ import chunk4j.Chunk;
 
 public class MessageProducer {
 
-    private final Chopper chopper = ChunkChopper.ofByteSize(1024); // each chopped off chunk holds up to 1024 bytes
+  private final Chopper chopper = ChunkChopper.ofByteSize(1024); // each chopped off chunk holds up to 1024 bytes
 
-    @Autowired private MessagingTransport transport;
+  @Autowired
+  private MessagingTransport transport;
 
-    /**
-     * Sender method of business data
-     */
-    public void sendBusinessDomainData(String domainDataText) {
-        chopper.chop(domainDataText.getBytes()).forEach((chunk) -> transport.send(chunkToMessage(chunk)));
-    }
+  /**
+   * Sender method of business data
+   */
+  public void sendBusinessDomainData(String domainDataText) {
+    chopper.chop(domainDataText.getBytes()).forEach((chunk) -> transport.send(chunkToMessage(chunk)));
+  }
 
-    /**
-     * pack/serialize/marshal the chunk POJO into a transport-specific message
-     */
-    private Message chunkToMessage(Chunk chunk) {
-        //...
-    }
+  /**
+   * pack/serialize/marshal the chunk POJO into a transport-specific message
+   */
+  private Message chunkToMessage(Chunk chunk) {
+    //...
+  }
 }
 ```
 
@@ -95,35 +101,32 @@ in the same group representing the original data unit.
 
 ```java
 
-import java.io.Serializable;
-
 @Value
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Builder
 public class Chunk implements Serializable {
 
-    private static final long serialVersionUID = -1879320933982945956L;
-    /**
-     * The group ID of the original data blob. All chunks in the same group share the same group ID.
-     */
-    @EqualsAndHashCode.Include UUID groupId;
+  @Serial
+  private static final long serialVersionUID = -1879320933982945956L;
 
-    /**
-     * Ordered index at which this current chunk is positioned inside the group. Chunks are chopped off from the
-     * original data bytes in sequential order, indexed as such, and assigned with the same group ID as all other chunks
-     * in the group that represents the original data bytes.
-     */
-    @EqualsAndHashCode.Include int index;
+  /** The group ID of the original data blob. All chunks in the same group share the same group ID. */
+  @EqualsAndHashCode.Include
+  UUID groupId;
 
-    /**
-     * Total number of chunks the original data blob is chopped to form the group.
-     */
-    int groupSize;
+  /**
+   * Ordered index at which this current chunk is positioned inside the group. Chunks are chopped off from the
+   * original data bytes in sequential order, indexed as such, and assigned with the same group ID as all other chunks
+   * in the group that represents the original data bytes.
+   */
+  @EqualsAndHashCode.Include
+  int index;
 
-    /**
-     * Data bytes chopped for this current chunk to hold.
-     */
-    @ToString.Exclude byte[] bytes;
+  /** Total number of chunks the original data blob is chopped to form the group. */
+  int groupSize;
+
+  /** Data bytes chopped for this current chunk to hold. */
+  @ToString.Exclude
+  byte[] bytes;
 }
 ```
 
@@ -141,20 +144,22 @@ data assembly details.
 #### API:
 
 ```java
+
+@FunctionalInterface
 public interface Stitcher {
-    /**
-     * @param chunk
-     *         to be added to its corresponding chunk group. If this chunk renders its group "complete", i.e. all the
-     *         chunks of the original data blob are gathered, then the original data blob will be stitched together and
-     *         returned. Otherwise, if the chunk group still hasn't gathered all the chunks needed, even with the
-     *         addition of this chunk, then the whole group will be kept around, waiting for the missing chunk(s) to
-     *         arrive.
-     * @return non-empty <code>Optional</code> containing the original data blob restored by the stitcher if the input
-     *         chunk is the last missing piece of the entire chunk group representing the original data; otherwise, if
-     *         the input chunk is not the last one expected, empty <code>Optional</code>.
-     */
-    Optional<byte[]> stitch(Chunk chunk);
+
+  /**
+   * Adds a chunk to its corresponding chunk group. If the chunk is the last one expected by the group, the original
+   * data bytes are restored and returned. Otherwise, the chunk group is kept around, waiting for the missing chunk(s)
+   * to arrive.
+   *
+   * @param chunk The chunk to be added to its corresponding chunk group.
+   * @return An Optional containing the original data bytes if the chunk is the last one expected by the group, or an
+   *     empty Optional otherwise.
+   */
+  Optional<byte[]> stitch(Chunk chunk);
 }
+
 ```
 
 On the stitcher side, a group must gather all the previously chopped chunks before the original data blob represented by
@@ -165,24 +170,25 @@ this group can be stitched back together and restored.
 ```java
 public class MessageConsumer {
 
-    private final Stitcher stitcher = new ChunkStitcher.Builder().build();
+  private final Stitcher stitcher = new ChunkStitcher.Builder().build();
 
-    @Autowried private DomainDataProcessor domainDataProcessor;
+  @Autowried
+  private DomainDataProcessor domainDataProcessor;
 
-    /**
-     * Suppose the run-time invocation of this method is managed by messaging provider/transport
-     */
-    public void onReceiving(Message message) {
-        stitcher.stitch(messageToChunk(message))
-                .ifPresent(originalDomainDataBytes -> domainDataProcessor.process(new String(originalDomainDataBytes)));
-    }
+  /**
+   * Suppose the run-time invocation of this method is managed by messaging provider/transport
+   */
+  public void onReceiving(Message message) {
+    stitcher.stitch(messageToChunk(message))
+        .ifPresent(originalDomainDataBytes -> domainDataProcessor.process(new String(originalDomainDataBytes)));
+  }
 
-    /**
-     * unpack/deserialize/unmarshal the chunk POJO from the transport-specific message
-     */
-    private Chunk messageToChunk(Message message) {
-        //...
-    }
+  /**
+   * unpack/deserialize/unmarshal the chunk POJO from the transport-specific message
+   */
+  private Chunk messageToChunk(Message message) {
+    //...
+  }
 }
 ```
 
