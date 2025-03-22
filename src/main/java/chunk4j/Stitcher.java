@@ -27,24 +27,25 @@ package chunk4j;
 import java.util.Optional;
 
 /**
- * The Stitcher interface defines the contract for stitching chunks of data back into their original form.
- * Implementations of this interface should provide a method to stitch a chunk into its corresponding chunk group. If
- * the chunk is the last one expected by the group, the original data bytes are restored and returned. Otherwise, the
- * chunk group is kept around, waiting for the missing chunk(s) to arrive. The Stitcher interface is thread-safe.
+ * The Stitcher interface defines the contract for stitching chunks of data back into their original
+ * form. Implementations of this interface should provide a method to stitch a chunk into its
+ * corresponding chunk group. If the chunk is the last one expected by the group, the original data
+ * bytes are restored and returned. Otherwise, the chunk group is kept around, waiting for the
+ * missing chunk(s) to arrive. The Stitcher interface is thread-safe.
  *
  * @author Qingtian Wang
  */
 @FunctionalInterface
 public interface Stitcher {
 
-    /**
-     * Adds a chunk to its corresponding chunk group. If the chunk is the last one expected by the group, the original
-     * data bytes are restored and returned. Otherwise, the chunk group is kept around, waiting for the missing chunk(s)
-     * to arrive.
-     *
-     * @param chunk The chunk to be added to its corresponding chunk group.
-     * @return An Optional containing the original data bytes if the chunk is the last one expected by the group, or an
-     *     empty Optional otherwise.
-     */
-    Optional<byte[]> stitch(Chunk chunk);
+  /**
+   * Adds a chunk to its corresponding chunk group. If the chunk is the last one expected by the
+   * group, the original data bytes are restored and returned. Otherwise, the chunk group is kept
+   * around, waiting for the missing chunk(s) to arrive.
+   *
+   * @param chunk The chunk to be added to its corresponding chunk group.
+   * @return An Optional containing the original data bytes if the chunk is the last one expected by
+   *     the group, or an empty Optional otherwise.
+   */
+  Optional<byte[]> stitch(Chunk chunk);
 }

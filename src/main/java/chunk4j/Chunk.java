@@ -28,40 +28,25 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.UUID;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-import lombok.Value;
+import lombok.NonNull;
 
 /**
- * The Chunk class represents a chunk of data that is part of a larger data blob. The data blob can be chopped up into
- * smaller chunks to form a group. When needed, often on a different network node than the one where the data was
- * chopped, the group of chunks can be collectively stitched back together to restore the original data. The Chunk class
- * is thread-safe and serializable. @author Qingtian Wang
+ * The Chunk record represents a chunk of data that is part of a larger data blob. The data blob can
+ * be chopped up into smaller chunks to form a group. When needed, often on a different network node
+ * than the one where the data was chopped, the group of chunks can be collectively stitched back
+ * together to restore the original data unit.
+ *
+ * @author Qingtian Wang
+ * @param groupId The unique identifier for the entire group of chunks representing the original
+ *     data unit.
+ * @param orderIndex The order index of this chunk within the chunk group.
+ * @param groupSize The total number of chunks in the group.
+ * @param bytes The byte array representing the data of this chunk.
  */
-@Value
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Builder
-public class Chunk implements Serializable {
+public record Chunk(@NonNull UUID groupId, int orderIndex, int groupSize, byte @NonNull [] bytes)
+    implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = -1879320933982945956L;
-
-    /** The group ID of the original data blob. All chunks in the same group share the same group ID. */
-    @EqualsAndHashCode.Include
-    UUID groupId;
-
-    /**
-     * Ordered index at which this current chunk is positioned inside the group. Chunks are chopped off from the
-     * original data bytes in sequential order, indexed as such, and assigned with the same group ID as all other chunks
-     * in the group that represents the original data bytes.
-     */
-    @EqualsAndHashCode.Include
-    int index;
-
-    /** Total number of chunks the original data blob is chopped to form the group. */
-    int groupSize;
-
-    /** Data bytes chopped for this current chunk to hold. */
-    @ToString.Exclude
-    byte[] bytes;
+  @Serial
+  private static final long serialVersionUID = -1879320933982945956L;
 }

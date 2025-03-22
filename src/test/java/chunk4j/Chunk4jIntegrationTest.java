@@ -33,24 +33,24 @@ import org.junit.jupiter.api.Test;
 /** @author Qingtian Wang */
 class Chunk4jIntegrationTest {
 
-    private static final String DATA_TEXT1 =
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
-    private static final String DATA_TEXT2 = DATA_TEXT1 + DATA_TEXT1;
+  private static final String DATA_TEXT1 =
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+  private static final String DATA_TEXT2 = DATA_TEXT1 + DATA_TEXT1;
 
-    @Test
-    void chunksInRandomOrder() {
-        ChunkChopper chopper = ChunkChopper.ofByteSize(4);
-        ChunkStitcher stitcher = new ChunkStitcher.Builder().build();
+  @Test
+  void chunksInRandomOrder() {
+    ChunkChopper chopper = ChunkChopper.ofByteSize(4);
+    ChunkStitcher stitcher = new ChunkStitcher.Builder().build();
 
-        List<Chunk> choppedMingledAndScrambled = new ArrayList<>();
-        choppedMingledAndScrambled.addAll(chopper.chop(DATA_TEXT1.getBytes()));
-        choppedMingledAndScrambled.addAll(chopper.chop(DATA_TEXT2.getBytes()));
-        Collections.shuffle(choppedMingledAndScrambled);
-        Set<byte[]> stitched = new HashSet<>();
-        choppedMingledAndScrambled.forEach(chunk -> stitcher.stitch(chunk).ifPresent(stitched::add));
-        Set<String> restored = stitched.stream().map(String::new).collect(Collectors.toSet());
+    List<Chunk> choppedMingledAndScrambled = new ArrayList<>();
+    choppedMingledAndScrambled.addAll(chopper.chop(DATA_TEXT1.getBytes()));
+    choppedMingledAndScrambled.addAll(chopper.chop(DATA_TEXT2.getBytes()));
+    Collections.shuffle(choppedMingledAndScrambled);
+    Set<byte[]> stitched = new HashSet<>();
+    choppedMingledAndScrambled.forEach(chunk -> stitcher.stitch(chunk).ifPresent(stitched::add));
+    Set<String> restored = stitched.stream().map(String::new).collect(Collectors.toSet());
 
-        assertTrue(restored.contains(DATA_TEXT1));
-        assertTrue(restored.contains(DATA_TEXT2));
-    }
+    assertTrue(restored.contains(DATA_TEXT1));
+    assertTrue(restored.contains(DATA_TEXT2));
+  }
 }

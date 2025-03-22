@@ -100,33 +100,24 @@ in the same group representing the original data unit.
 #### API:
 
 ```java
-
-@Value
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+/**
+ * The Chunk record represents a chunk of data that is part of a larger data blob. The data blob can
+ * be chopped up into smaller chunks to form a group. When needed, often on a different network node
+ * than the one where the data was chopped, the group of chunks can be collectively stitched back
+ * together to restore the original data unit.
+ *
+ * @param groupId The unique identifier for the entire group of chunks representing the original
+ *     data unit.
+ * @param orderIndex The order index of this chunk within the chunk group.
+ * @param groupSize The total number of chunks in the group.
+ * @param bytes The byte array representing the data of this chunk.
+ */
 @Builder
-public class Chunk implements Serializable {
+public record Chunk(@NonNull UUID groupId, int orderIndex, int groupSize, byte @NonNull [] bytes)
+        implements Serializable {
 
   @Serial
   private static final long serialVersionUID = -1879320933982945956L;
-
-  /** The group ID of the original data blob. All chunks in the same group share the same group ID. */
-  @EqualsAndHashCode.Include
-  UUID groupId;
-
-  /**
-   * Ordered index at which this current chunk is positioned inside the group. Chunks are chopped off from the
-   * original data bytes in sequential order, indexed as such, and assigned with the same group ID as all other chunks
-   * in the group that represents the original data bytes.
-   */
-  @EqualsAndHashCode.Include
-  int index;
-
-  /** Total number of chunks the original data blob is chopped to form the group. */
-  int groupSize;
-
-  /** Data bytes chopped for this current chunk to hold. */
-  @ToString.Exclude
-  byte[] bytes;
 }
 ```
 
@@ -249,8 +240,10 @@ to keep the **overall** message size under the transport limit.
 #### Message acknowledgment/commit
 
 When working with a messaging provider, you want to acknowledge/commit all the messages of an entire group of chunks in
-an all-or-nothing fashion, at least semantically. If the all-or-nothing group commit is unavailable, then in case of a node crash, it is possible that the group loses
-chunks. The loss of any chunk in a group semantically equates the loss of entire group, thus the original data unit.
+an all-or-nothing fashion, at least semantically. Otherwise, in case of a consumer node crash, it is possible that the
+group loses chunks. The loss of any chunk in a group semantically equates the loss of entire group, thus the whole
+original data unit.
 
-Fortunately, that is not an issue with any messaging provider that supports the at-least-once delivery to the message consumer. Since chunk4j Stitcher is tolerant and will seamlessly discard repeatedly delivered chunks, as long as there is no loss of chunks, the overall data integrity is assured.
-
+Fortunately, that is not an issue with any messaging provider that supports the at-least-once delivery to the message
+consumer. Since the chunk4j Stitcher is tolerant and will seamlessly discard repeatedly delivered chunks, as long as
+there is no loss of chunks, the overall data integrity is assured.

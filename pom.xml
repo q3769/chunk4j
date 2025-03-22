@@ -28,7 +28,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.q3769</groupId>
     <artifactId>chunk4j</artifactId>
-    <version>20250321.0.0</version>
+    <version>20250322.0.0</version>
     <packaging>jar</packaging>
     <name>chunk4j</name>
     <description>A Java API to chop up larger data blobs into smaller "chunks" of a pre-defined size, and stitch the
@@ -180,7 +180,7 @@
             <artifactId>coco4j</artifactId>
             <version>14.1.0</version>
             <scope>test</scope>
-        </dependency>
+        </dependency><dependency><groupId>org.jetbrains</groupId><artifactId>annotations</artifactId><version>25.0.0</version><scope>compile</scope></dependency>
     </dependencies>
     <build>
         <plugins>
@@ -228,8 +228,8 @@
                 <configuration>
                     <java>
                         <palantirJavaFormat>
-                            <version>2.60.0</version>
-                            <style>PALANTIR</style>
+                            <version>2.61.0</version>
+                            <style>GOOGLE</style>
                             <formatJavadoc>true</formatJavadoc>
                         </palantirJavaFormat>
                         <removeUnusedImports/>
