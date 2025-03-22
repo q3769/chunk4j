@@ -249,8 +249,8 @@ to keep the **overall** message size under the transport limit.
 #### Message acknowledgment/commit
 
 When working with a messaging provider, you want to acknowledge/commit all the messages of an entire group of chunks in
-an all-or-nothing fashion,at least semantically. If the all-or-nothing group commit is unavailable, then in case of a node crash, it is possible that the group loses
+an all-or-nothing fashion, at least semantically. If the all-or-nothing group commit is unavailable, then in case of a node crash, it is possible that the group loses
 chunks. The loss of any chunk in a group semantically equates the loss of entire group, thus the original data unit.
 
-Fortunately, this is often naturally achieved with any messaging providers that supports the at-least-once delivery to the message consumer. Since chunk4j Stitcher is tolerant and will seamlessly discard repeatedly delivered chunks, as long as there is no loss of chunks, the overall data integrity is assured.
+Fortunately, that is not an issue with any messaging providers that supports the at-least-once delivery to the message consumer. Since chunk4j Stitcher is tolerant and will seamlessly discard repeatedly delivered chunks, as long as there is no loss of chunks, the overall data integrity is assured.
 
