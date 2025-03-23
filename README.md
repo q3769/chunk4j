@@ -251,7 +251,7 @@ to the message consumer. The Stitcher of chunk4j is tolerant and will seamlessly
 long as there is no loss of chunks per the messaging provider guarantee, the overall data integrity is assured by the
 chunk4j consumer.
 
-However, because the data stored by the chunk4j Stitcher at runtime is in memory-only and not persisted, the Stitcher
+However, because the data stored by the chunk4j Stitcher at runtime is in memory-only and not persistent, the Stitcher
 will lose all the incomplete groups of chunks if the consumer node crashes. If that is something that must be avoided or
 recovered from, options include:
 
