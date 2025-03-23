@@ -14,14 +14,14 @@ Notes:
 
 - The separate processes of "chop" and "stitch" often need to happen on different network compute nodes; and the
   chunks are transported between the nodes in a possibly random order.
-- The chunk4j API comes in handy when, at run-time, you may have to ship larger sized data entries than what is
-  allowed by the underlying transport in a distributed system. E.g. at the time of writing, the default message size
-  limit is 256KB with [Amazon Simple Queue Service (SQS)](https://aws.amazon.com/sqs/) , and 1MB
+- The chunk4j API comes in handy when, at run-time, you may have to ship larger sized data entries than what is allowed
+  by the underlying transport in a distributed system. E.g. at the time of writing, the default message size limit is
+  256KB with [Amazon Simple Queue Service (SQS)](https://aws.amazon.com/sqs/) , and 1MB
   with [Apache Kafka](https://kafka.apache.org/); the default cache entry size limit is 1MB
   for [Memcached](https://memcached.org/), and 512MB for [Redis](https://redis.io/). Although the default limits can be
   customized, often times, the default is there for a sensible reason. Meanwhile, it may be difficult to predict or
-  ensure that the size of a data entry being transported at run-time will, by its business nature, would never go
-  beyond the default or customized limit.
+  ensure that the size of a data entry being transported at run-time will, by its business nature, would never go beyond
+  the default or customized limit.
 
 ## Prerequisite
 
