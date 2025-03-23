@@ -251,12 +251,14 @@ to the message consumer. The Stitcher of chunk4j is tolerant and will seamlessly
 long as there is no loss of chunks per the messaging provider guarantee, the overall data integrity is assured by the
 chunk4j consumer.
 
-However, if your specific messaging provider (and/or consumer API) does not support all-or-nothing group commit, then
-because the data stored by the chunk4j Stitcher at runtime is in memory-only and not persisted, the Stitcher will lose
-all the incomplete groups of chunks if the consumer node crashes. If that is something you must avoid or recover from, your options include:
+However, because the data stored by the chunk4j Stitcher at runtime is in memory-only and not persisted, the Stitcher
+will lose all the incomplete groups of chunks if the consumer node crashes. If that is something that must be avoided or
+recovered from, options include:
 
 * Use a third-party API or implement a custom mechanism that works with your specific messaging provider to achieve the
-  all-or-nothing acknowledgment/commit for the group.
+  all-or-nothing acknowledgment/commit semantics for the group. For example, in case of Apache Kafka, this is trivial to
+  implement with the manual sync commit mode (optionally the transactional producer/consumer API and/or Spring Kafka).
+  In case of TIBCO EMS, the support of individual explicit message acknowledgment can make this even more seamless.
 * Make the loss of original data units detectable and recoverable by the application logic. For example, you can
   implement a mechanism to detect the loss of an original data unit (e.g. via timeout checks), and re-send the data
   unit (missing chunks) from the producer.
