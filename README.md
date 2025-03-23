@@ -246,7 +246,18 @@ entire group of chunks in an all-or-nothing fashion. Otherwise, in case of a con
 the group loses chunks. The loss of any chunk in a group semantically equates the loss of the entire group, thus the
 whole original data unit.
 
-Fortunately, that is naturally taken care of with any messaging provider that supports the at-least-once delivery
-guarantee to the message consumer. The Stitcher of chunk4j is tolerant and will seamlessly discard repeatedly delivered
-chunks. As long as there is no loss of chunks per the messaging provider guarantee, the overall data integrity is
-assured by the chunk4j consumer.
+Usually, data integrity is not an issue with any messaging provider that supports the at-least-once delivery guarantee
+to the message consumer. The Stitcher of chunk4j is tolerant and will seamlessly discard repeatedly delivered chunks. As
+long as there is no loss of chunks per the messaging provider guarantee, the overall data integrity is assured by the
+chunk4j consumer.
+
+However, if your specific messaging provider (and/or consumer API) does not support all-or-nothing group commit, then
+because the data stored by the chunk4j Stitcher at runtime is in memory-only and not persisted, the Stitcher will lose
+all the incomplete groups of chunks if the consumer node crashes. If that is something you must avoid, your options
+include:
+
+* Use a third-party API or implement a custom mechanism that works with your specific messaging provider to achieve the
+  all-or-nothing acknowledgment/commit for the group.
+* Make the loss of original data units detectable and recoverable by the application logic. For example, you can
+  implement a mechanism to detect the loss of an original data unit (e.g. via timeout checks), and re-send the data
+  unit (missing chunks) from the producer.
