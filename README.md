@@ -255,11 +255,11 @@ However, because the data stored by the chunk4j Stitcher at runtime is in memory
 will lose all the incomplete groups of chunks if the consumer node crashes. If that is a situation having to be avoided
 or recovered from, the options include:
 
-* Preventative: Use a third-party API or implement a custom mechanism that works with your specific messaging provider
-  to achieve the all-or-nothing acknowledgment/commit semantics for the group. For example, in case of Apache Kafka,
-  this is trivial to implement with the manual sync commit mode (and optionally the support of transactional
-  producer/consumer API and/or Spring Kafka). In case of TIBCO EMS, the support of individual explicit message
-  acknowledgment can make this even more seamless.
-* Curative: Make the loss of original data units detectable and recoverable by the application logic. For example, you
-  can implement a mechanism to detect the loss of an original data unit (e.g. via timeout checks), and re-send the data
-  unit (missing chunks) from the producer.
+* **The Preventative Approach**: Use a third-party API or implement a custom mechanism that works with your specific
+  messaging provider to achieve the all-or-nothing acknowledgment/commit semantics for the group. For example, in case
+  of the Apache Kafka messaging provider, this is trivial to implement with the manual sync commit mode (and optionally
+  the support of transactional producer/consumer API and/or Spring Kafka). In case of TIBCO EMS, the support of
+  individual explicit message acknowledgment can make this even more seamless.
+* **The Curative Approach**: Make the loss of original data units detectable and recoverable by the application logic.
+  For example, you can implement a mechanism to detect the loss of an original data unit (e.g. via timeout checks), and
+  re-send the data unit (missing chunks) from the producer.
