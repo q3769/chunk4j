@@ -114,7 +114,7 @@ in the same group representing the original data unit.
  */
 @Builder
 public record Chunk(@NonNull UUID groupId, int orderIndex, int groupSize, byte @NonNull [] bytes)
-        implements Serializable {
+    implements Serializable {
 
   @Serial
   private static final long serialVersionUID = -1879320933982945956L;
@@ -239,11 +239,12 @@ to keep the **overall** message size under the transport limit.
 
 #### Message acknowledgment/commit
 
-When working with a messaging provider, you want to acknowledge/commit all the messages of an entire group of chunks in
-an all-or-nothing fashion, at least semantically. Otherwise, in case of a consumer node crash, it is possible that the
-group loses chunks. The loss of any chunk in a group semantically equates the loss of entire group, thus the whole
-original data unit.
+When working with a messaging provider, you want to (at least semantically) acknowledge/commit all the messages of an
+entire group of chunks in an all-or-nothing fashion. Otherwise, in case of a consumer node crash, it is possible that
+the group loses chunks. The loss of any chunk in a group semantically equates the loss of the entire group, thus the
+whole original data unit.
 
-Fortunately, that is not an issue with any messaging provider that supports the at-least-once delivery to the message
-consumer. Since the chunk4j Stitcher is tolerant and will seamlessly discard repeatedly delivered chunks, as long as
-there is no loss of chunks, the overall data integrity is assured.
+Fortunately, that is naturally taken care of with any messaging provider that supports the at-least-once delivery
+guarantee to the message consumer. The Stitcher of chunk4j is tolerant and will seamlessly discard repeatedly delivered
+chunks. As long as there is no loss of chunks per the messaging provider guarantee, the overall data integrity is
+assured by the chunk4j consumer/Stitcher.
