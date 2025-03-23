@@ -19,9 +19,9 @@ Notes:
   limit is 256KB with [Amazon Simple Queue Service (SQS)](https://aws.amazon.com/sqs/) , and 1MB
   with [Apache Kafka](https://kafka.apache.org/); the default cache entry size limit is 1MB
   for [Memcached](https://memcached.org/), and 512MB for [Redis](https://redis.io/). Although the default limits can be
-  customized, often times, the default is there for a sensible reason. Meanwhile, it may be difficult to predict that
-  the data entries being transported at run-time will, by their intrinsic nature, never go beyond the default or
-  customized limit.
+  customized, often times, the default is there for a sensible reason. Meanwhile, it may be difficult to predict or
+  ensure that the size of a data entry being transported at run-time will, by its business nature, would never go
+  beyond the default or customized limit.
 
 ## Prerequisite
 
