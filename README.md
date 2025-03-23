@@ -252,8 +252,8 @@ long as there is no loss of chunks per the messaging provider guarantee, the ove
 chunk4j consumer.
 
 However, because the data stored by the chunk4j Stitcher at runtime is in memory-only and not persistent, the Stitcher
-will lose all the incomplete groups of chunks if the consumer node crashes. If that is something that must be avoided or
-recovered from, options include:
+will lose all the incomplete groups of chunks if the consumer node crashes. If that a situation having to be avoided or
+recovered from, the options include:
 
 * Use a third-party API or implement a custom mechanism that works with your specific messaging provider to achieve the
   all-or-nothing acknowledgment/commit semantics for the group. For example, in case of Apache Kafka, this is trivial to
