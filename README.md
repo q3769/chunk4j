@@ -247,4 +247,4 @@ whole original data unit.
 Fortunately, that is naturally taken care of with any messaging provider that supports the at-least-once delivery
 guarantee to the message consumer. The Stitcher of chunk4j is tolerant and will seamlessly discard repeatedly delivered
 chunks. As long as there is no loss of chunks per the messaging provider guarantee, the overall data integrity is
-assured by the chunk4j consumer/Stitcher.
+assured by the chunk4j consumer.
