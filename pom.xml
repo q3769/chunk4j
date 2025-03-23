@@ -180,7 +180,7 @@
             <artifactId>coco4j</artifactId>
             <version>14.1.0</version>
             <scope>test</scope>
-        </dependency><dependency><groupId>org.jetbrains</groupId><artifactId>annotations</artifactId><version>25.0.0</version><scope>compile</scope></dependency>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
