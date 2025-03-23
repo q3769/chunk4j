@@ -185,7 +185,7 @@ public class MessageConsumer {
 
 It is imperative that all received chunks be stitched by the same Stitcher instance. The instance's `stitch` method
 should be repeatedly called on every chunk. With each call, if the input chunk is the last expected piece chopped from
-an original data unit, then the Stitcher returns a nonempty `Optional` containing the completely restored bytes of the
+an original data unit, then the Stitcher returns a non-empty `Optional` containing the completely restored bytes of the
 original data unit. Otherwise, if the input chunk is not the last one expected of its original data unit, then the
 Stitcher keeps the chunk aside and returns an empty `Optional`, indicating no original data unit can yet be restored.
 
@@ -198,8 +198,8 @@ that is, with that chunk, the group has gathered all the chunks of the original 
 
 - The entire group of chunks is stitched to restore the original data bytes;
 - The complete group of chunks is evicted from the Stitcher's cache;
-- The restored bytes from the evicted group are returned in an `Optional` - nonempty, indicating the data contained
-  inside is a complete restore of the original.
+- The restored bytes from the evicted group are returned in an `Optional` that is non-empty, indicating the data
+  contained inside is a complete restore of the original.
 
 By default, a stitcher caches unlimited groups of pending chunks, and a pending group of chunks will never be discarded
 no matter how much time has passed while awaiting all the chunks of the original data unit to arrive:
@@ -208,7 +208,9 @@ no matter how much time has passed while awaiting all the chunks of the original
 new ChunkStitcher.Builder().build()
 ```
 
-Both of those aspects, though, can be customized. The following stitcher will discard a group of chunks if 5 seconds of
+Both of those aspects, though, can be customized.
+
+The following stitcher will discard a group of chunks if 5 seconds of
 time have passed since the stitcher was asked to stitch the very first chunk of the group, but hasn't received all the
 chunks needed to restore the whole group back to the original data unit:
 
@@ -216,14 +218,14 @@ chunks needed to restore the whole group back to the original data unit:
 new ChunkStitcher.Builder().maxStitchTime(Duration.ofSeonds(5)).build()
 ```
 
-This stitcher will discard some group(s) of chunks when there are more than 100 groups of original data pending
+The following stitcher will discard some group(s) of chunks when there are more than 100 groups of original data pending
 restoration:
 
 ```jshelllanguage
 new ChunkStitcher.Builder().maxStitchingGroups(100).build()
 ```
 
-This stitcher is customized by a combination of both aspects:
+The following stitcher is customized by a combination of both aspects:
 
 ```jshelllanguage
 new ChunkStitcher.Builder().maxStitchTime(Duration.ofSeconds(5)).maxStitchingGroups(100).build()
@@ -233,7 +235,7 @@ new ChunkStitcher.Builder().maxStitchTime(Duration.ofSeconds(5)).maxStitchingGro
 
 #### Chunk size/capacity
 
-Chunk4J works on the application layer of the network (Layer 7). There is a small fixed-size overhead in addition to
+chunk4j works on the application layer of the network (Layer 7). There is a small fixed-size overhead in addition to
 a chunk's byte size to serialize the entire Chunk object. Take all possible overheads into account when designing
 to keep the **overall** message size under the transport limit.
 
