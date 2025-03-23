@@ -253,8 +253,7 @@ chunk4j consumer.
 
 However, if your specific messaging provider (and/or consumer API) does not support all-or-nothing group commit, then
 because the data stored by the chunk4j Stitcher at runtime is in memory-only and not persisted, the Stitcher will lose
-all the incomplete groups of chunks if the consumer node crashes. If that is something you must avoid, your options
-include:
+all the incomplete groups of chunks if the consumer node crashes. If that is something you must avoid or recover from, your options include:
 
 * Use a third-party API or implement a custom mechanism that works with your specific messaging provider to achieve the
   all-or-nothing acknowledgment/commit for the group.
