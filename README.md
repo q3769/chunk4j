@@ -261,5 +261,5 @@ or recovered from, the options include:
   the support of transactional producer/consumer API and/or Spring Kafka). In case of TIBCO EMS, the support of
   individual explicit message acknowledgment can make this even more seamless.
 * **The Curative Approach**: Make the loss of original data units detectable and recoverable by the application logic.
-  For example, you can implement a mechanism to detect the loss of an original data unit (e.g. via timeout checks), and
-  re-send the data unit (missing chunks) from the producer.
+  For example, implement a mechanism to detect the loss of an original data unit (e.g. via timeout checks), and re-send
+  the data unit (missing chunks) from the producer.
