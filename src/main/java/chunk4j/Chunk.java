@@ -26,6 +26,7 @@ package chunk4j;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,12 +37,12 @@ import lombok.NonNull;
  * than the one where the data was chopped, the group of chunks can be collectively stitched back
  * together to restore the original data unit.
  *
- * @author Qingtian Wang
  * @param groupId The unique identifier for the entire group of chunks representing the original
  *     data unit.
  * @param orderIndex The order index of this chunk within the chunk group.
  * @param groupSize The total number of chunks in the group.
  * @param bytes The byte array representing the data of this chunk.
+ * @author Qingtian Wang
  */
 @Builder
 public record Chunk(@NonNull UUID groupId, int orderIndex, int groupSize, byte @NonNull [] bytes)
@@ -49,4 +50,21 @@ public record Chunk(@NonNull UUID groupId, int orderIndex, int groupSize, byte @
 
   @Serial
   private static final long serialVersionUID = -1879320933982945956L;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Chunk chunk = (Chunk) o;
+    return orderIndex == chunk.orderIndex && Objects.equals(groupId, chunk.groupId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(groupId, orderIndex);
+  }
 }

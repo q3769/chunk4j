@@ -114,10 +114,27 @@ in the same group representing the original data unit.
  */
 @Builder
 public record Chunk(@NonNull UUID groupId, int orderIndex, int groupSize, byte @NonNull [] bytes)
-    implements Serializable {
+        implements Serializable {
 
   @Serial
   private static final long serialVersionUID = -1879320933982945956L;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Chunk chunk = (Chunk) o;
+    return orderIndex == chunk.orderIndex && Objects.equals(groupId, chunk.groupId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(groupId, orderIndex);
+  }
 }
 ```
 

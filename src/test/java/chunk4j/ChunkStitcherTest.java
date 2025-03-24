@@ -48,7 +48,7 @@ class ChunkStitcherTest {
     @Test
     void lessThanNeeded() throws InterruptedException, ExecutionException {
       int originalDataItems = 1000;
-      int insufficientMaxGroups = 2;
+      int insufficientMaxGroups = 1;
       ChunkStitcher tot =
           new ChunkStitcher.Builder().maxStitchingGroups(insufficientMaxGroups).build();
       List<Chunk> chunksOfAllItems = new ArrayList<>();
@@ -59,7 +59,7 @@ class ChunkStitcherTest {
 
       List<Future<Optional<byte[]>>> allStitchedFutures = new ArrayList<>();
       try (ExecutorService executorService =
-          MoreExecutors.newBoundedVirtualThreadPerTaskExecutor(insufficientMaxGroups * 100)) {
+          MoreExecutors.newBoundedVirtualThreadPerTaskExecutor(insufficientMaxGroups * 10)) {
         for (Chunk chunk : chunksOfAllItems) {
           allStitchedFutures.add(executorService.submit(() -> tot.stitch(chunk)));
         }
