@@ -56,11 +56,10 @@ public record Chunk(@NonNull UUID groupId, int orderIndex, int groupSize, byte @
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+    if (o instanceof Chunk chunk) {
+      return orderIndex == chunk.orderIndex && Objects.equals(groupId, chunk.groupId);
     }
-    Chunk chunk = (Chunk) o;
-    return orderIndex == chunk.orderIndex && Objects.equals(groupId, chunk.groupId);
+    return false;
   }
 
   @Override

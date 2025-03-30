@@ -114,7 +114,7 @@ in the same group representing the original data unit.
  */
 @Builder
 public record Chunk(@NonNull UUID groupId, int orderIndex, int groupSize, byte @NonNull [] bytes)
-    implements Serializable {
+        implements Serializable {
 
   @Serial
   private static final long serialVersionUID = -1879320933982945956L;
@@ -124,11 +124,10 @@ public record Chunk(@NonNull UUID groupId, int orderIndex, int groupSize, byte @
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+    if (o instanceof Chunk chunk) {
+      return orderIndex == chunk.orderIndex && Objects.equals(groupId, chunk.groupId);
     }
-    Chunk chunk = (Chunk) o;
-    return orderIndex == chunk.orderIndex && Objects.equals(groupId, chunk.groupId);
+    return false;
   }
 
   @Override
