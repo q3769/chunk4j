@@ -114,7 +114,7 @@ in the same group representing the original data unit.
  */
 @Builder
 public record Chunk(@NonNull UUID groupId, int orderIndex, int groupSize, byte @NonNull [] bytes)
-        implements Serializable {
+    implements Serializable {
 
   @Serial
   private static final long serialVersionUID = -1879320933982945956L;
@@ -274,9 +274,7 @@ or recovered from, the options include:
 
 * **The Preventative Approach**: Use a third-party API or implement a custom mechanism that works with your specific
   messaging provider to achieve the all-or-nothing acknowledgment/commit semantics for the group. For example, in case
-  of the Apache Kafka messaging provider, this is trivial to implement with the manual sync commit mode (and optionally
-  the support of transactional producer/consumer API and/or Spring Kafka). In case of TIBCO EMS, the support of
-  individual explicit message acknowledgment can make this even more seamless.
+  of TIBCO EMS, the provider support of individual explicit message acknowledgment can make this trivial to implement.
 * **The Curative Approach**: Make the loss of original data units detectable and recoverable by the application logic.
   For example, implement a mechanism to detect the loss of an original data unit (e.g. via timeout checks), and re-send
   the data unit (missing chunks) from the producer.
