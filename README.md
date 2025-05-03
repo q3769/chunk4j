@@ -114,7 +114,7 @@ in the same group representing the original data unit.
  */
 @Builder
 public record Chunk(@NonNull UUID groupId, int orderIndex, int groupSize, byte @NonNull [] bytes)
-        implements Serializable {
+    implements Serializable {
 
   @Serial
   private static final long serialVersionUID = -1879320933982945956L;
@@ -262,14 +262,14 @@ entire group of chunks in an all-or-nothing fashion. Otherwise, in case of a con
 the group loses chunks. The loss of any chunk in a group semantically equates the loss of the entire group, thus the
 whole original data unit.
 
-Usually, data integrity is not an issue with any messaging provider that supports the at-least-once delivery guarantee
+Usually, data integrity is not an issue with a messaging provider that supports the at-least-once delivery guarantee
 to the message consumer. The Stitcher of chunk4j is tolerant and will seamlessly discard repeatedly delivered chunks. As
 long as there is no loss of chunks per the messaging provider guarantee, the overall data integrity is assured by the
 chunk4j consumer.
 
 However, because the data stored by the chunk4j Stitcher at runtime is in memory-only and not persistent, the Stitcher
-will lose all the incomplete groups of chunks if the consumer node crashes. If that is a situation having to be avoided
-or recovered from, the options include:
+will lose all the incomplete groups of chunks if the message consumer node crashes. To avoid or recover from such loss,
+the options include:
 
 * **The Preventative Approach**: Use a third-party API or implement a custom mechanism that works with your specific
   messaging provider to achieve the all-or-nothing acknowledgment/commit semantics for the group. For example, in case
