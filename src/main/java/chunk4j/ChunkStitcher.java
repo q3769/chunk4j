@@ -27,10 +27,10 @@ package chunk4j;
 import com.github.benmanes.caffeine.cache.*;
 import elf4j.Level;
 import elf4j.Logger;
+import jakarta.annotation.Nullable;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.annotation.concurrent.ThreadSafe;
 import lombok.Data;
@@ -48,7 +48,7 @@ public final class ChunkStitcher implements Stitcher {
   private static final int DEFAULT_MAX_STITCHED_BYTE_SIZE = Integer.MAX_VALUE;
   private static final long DEFAULT_MAX_STITCHING_GROUPS = Long.MAX_VALUE;
   private static final long DEFAULT_MAX_STITCH_TIME_NANOS = Long.MAX_VALUE;
-  private static final Logger logger = Logger.instance();
+  private static final Logger log = Logger.instance();
   private final Cache<UUID, ChunkStitchingGroup> chunkGroups;
   private final Duration maxStitchTime;
   private final int maxStitchedByteSize;
@@ -80,8 +80,8 @@ public final class ChunkStitcher implements Stitcher {
    *     the group, or an empty Optional otherwise.
    */
   @Override
-  public Optional<byte[]> stitch(@NonNull Chunk chunk) {
-    logger.atTrace().log(() -> "Received: " + chunk);
+  public @NonNull Optional<byte[]> stitch(@NonNull Chunk chunk) {
+    log.trace(() -> "Received: " + chunk);
     StitchedBytesHolder stitchedBytesHolder = new StitchedBytesHolder();
     chunkGroups.asMap().compute(chunk.groupId(), (k, group) -> {
       if (group == null) {
@@ -107,13 +107,11 @@ public final class ChunkStitcher implements Stitcher {
       return;
     }
     if (chunk.bytes().length + group.getCurrentGroupByteSize() > maxStitchedByteSize) {
-      logger
-          .atWarn()
-          .log(
-              "By adding {}, stitching group {} would have exceeded safe-guarding byte size {}",
-              chunk,
-              chunk.groupId(),
-              maxStitchedByteSize);
+      log.warn(
+          "By adding {}, stitching group {} would have exceeded safe-guarding byte size {}",
+          chunk,
+          chunk.groupId(),
+          maxStitchedByteSize);
       throw new IllegalArgumentException("Stitched bytes in group exceeding configured max size");
     }
   }
@@ -239,13 +237,13 @@ public final class ChunkStitcher implements Stitcher {
      * @return A byte array containing the stitched chunks if the chunk is the last one expected by
      *     the group, or null otherwise.
      */
-    @Nullable public byte[] addAndStitch(Chunk chunk) {
+    public @Nullable byte[] addAndStitch(Chunk chunk) {
       if (!chunks.add(chunk)) {
-        logger.atWarn().log("Duplicate chunk {} received and ignored", chunk);
+        log.warn("Duplicate chunk {} received and ignored", chunk);
         return null;
       }
       if (getCurrentChunkTotal() == getExpectedChunkTotal()) {
-        logger.atDebug().log(() -> "Stitching all " + chunks.size() + " chunks in group " + this);
+        log.debug(() -> "Stitching all " + chunks.size() + " chunks in group " + this);
         return stitchToBytes(chunks);
       }
       return null;
@@ -328,22 +326,18 @@ public final class ChunkStitcher implements Stitcher {
         UUID groupId, ChunkStitchingGroup chunkStitchingGroup, @NonNull RemovalCause cause) {
       switch (cause) {
         case EXPIRED ->
-          logger
-              .atWarn()
-              .log(
-                  "chunk group [{}] took too long to stitch and expired after [{}], expecting [{}] chunks but only received [{}] when expired",
-                  groupId,
-                  maxStitchTime,
-                  chunkStitchingGroup.getExpectedChunkTotal(),
-                  chunkStitchingGroup.getCurrentChunkTotal());
+          log.warn(
+              "chunk group [{}] took too long to stitch and expired after [{}], expecting [{}] chunks but only received [{}] when expired",
+              groupId,
+              maxStitchTime,
+              chunkStitchingGroup.getExpectedChunkTotal(),
+              chunkStitchingGroup.getCurrentChunkTotal());
         case SIZE ->
-          logger
-              .atWarn()
-              .log(
-                  "chunk group [{}] was removed due to exceeding max group count [{}]",
-                  groupId,
-                  maxStitchingGroups);
-        default -> logger.atLevel(Level.OFF).log("Manual removals logging is OFF");
+          log.warn(
+              "chunk group [{}] was removed due to exceeding max group count [{}]",
+              groupId,
+              maxStitchingGroups);
+        default -> log.atLevel(Level.OFF).log("Manual removals logging is OFF");
       }
     }
   }

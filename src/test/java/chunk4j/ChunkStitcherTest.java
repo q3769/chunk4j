@@ -71,8 +71,8 @@ class ChunkStitcherTest {
 
       long allStitchedItems =
           allStitchedOptionals.stream().filter(Optional::isPresent).count();
-      log.atInfo().log("Original data items: {}", originalDataItems);
-      log.atInfo().log("Stitched data items: {}", allStitchedItems);
+      log.info("Original data items: {}", originalDataItems);
+      log.info("Stitched data items: {}", allStitchedItems);
       assertTrue(
           allStitchedItems < originalDataItems,
           "stitched and restored items [" + allStitchedItems
